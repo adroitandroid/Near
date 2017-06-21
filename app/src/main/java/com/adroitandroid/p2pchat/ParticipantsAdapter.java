@@ -20,9 +20,11 @@ class ParticipantsAdapter extends RecyclerView.Adapter<ParticipantsAdapter.Parti
     private static final int TYPE_HEADER = 1;
     private static final int TYPE_ITEM = 2;
     private List<Host> mParticipants;
+    private Listener mListener;
 
-    ParticipantsAdapter() {
+    ParticipantsAdapter(Listener listener) {
         mParticipants = new ArrayList<>();
+        mListener = listener;
     }
 
     @Override
@@ -42,15 +44,16 @@ class ParticipantsAdapter extends RecyclerView.Adapter<ParticipantsAdapter.Parti
     }
 
     @Override
-    public void onBindViewHolder(ParticipantVH holder, int position) {
+    public void onBindViewHolder(final ParticipantVH holder, int position) {
         if (TYPE_HEADER == holder.mViewType) {
             holder.mBinding.nameTv.setText("Participants Found:");
         } else {
-            holder.mBinding.nameTv.setText(mParticipants.get(position - 1).getName());
+            Host host = mParticipants.get(position - 1);
+            holder.mBinding.nameTv.setText(host.getName());
             holder.mBinding.getRoot().setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-//                    TODO: implement
+                    mListener.sendChatRequest(mParticipants.get(holder.getAdapterPosition() - 1));
                 }
             });
         }
@@ -63,9 +66,7 @@ class ParticipantsAdapter extends RecyclerView.Adapter<ParticipantsAdapter.Parti
 
     public void setData(Set<Host> hosts) {
         mParticipants = new ArrayList<>(hosts);
-        if (hosts.size() > 0) {
-            notifyDataSetChanged();
-        }
+        notifyDataSetChanged();
     }
 
     class ParticipantVH extends RecyclerView.ViewHolder {
@@ -77,5 +78,9 @@ class ParticipantsAdapter extends RecyclerView.Adapter<ParticipantsAdapter.Parti
             this.mBinding = binding;
             this.mViewType = viewType;
         }
+    }
+
+    interface Listener {
+        void sendChatRequest(Host host);
     }
 }

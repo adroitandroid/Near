@@ -310,7 +310,7 @@ public class UdpServerService extends Service {
         }
     }
 
-    public interface UdpBroadcastListener {
+    interface UdpBroadcastListener {
         void onServerSetupFailed(Throwable e);
 
         void onReceiveFailed();
@@ -318,9 +318,9 @@ public class UdpServerService extends Service {
         void onHostsUpdate(Set<Host> currentHosts);
     }
 
-    public class UdpServerBinder extends Binder {
+    class UdpServerBinder extends Binder {
 
-        public void setBroadcastListener(UdpBroadcastListener listener) {
+        void setBroadcastListener(UdpBroadcastListener listener) {
             UdpBroadcastListeningHandler.setListener(listener);
         }
 

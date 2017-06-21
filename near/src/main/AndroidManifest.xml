@@ -3,6 +3,8 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
 
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+
     <application
         android:allowBackup="true"
         android:label="@string/app_name"
@@ -11,6 +13,11 @@
         <service android:name="com.adroitandroid.near.discovery.UdpBroadcastService" />
 
         <service android:name="com.adroitandroid.near.discovery.UdpServerService" />
+
+        <service android:name="com.adroitandroid.near.connect.TcpServerService" />
+
+        <service android:name="com.adroitandroid.near.connect.TcpClientService" />
+
     </application>
 
 </manifest>

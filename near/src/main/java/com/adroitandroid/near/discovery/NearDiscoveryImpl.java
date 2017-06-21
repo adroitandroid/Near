@@ -7,6 +7,7 @@ import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.support.v4.util.ArraySet;
 
 import com.adroitandroid.near.model.Host;
 
@@ -29,11 +30,12 @@ class NearDiscoveryImpl implements NearDiscovery {
     private final long mDiscoveryTimeout;
     private final long mDiscoverableTimeout;
     private final Looper mListenerLooper;
-    private final Context context;
+    private final Context mContext;
     private boolean mDiscoverable;
     private boolean mDiscovering;
     private Disposable mDiscoverableDisposable;
     private Disposable mDiscoveryDisposable;
+    private Set<Host> mCurrentPeers;
 
     NearDiscoveryImpl(long discoverableTimeout,
                       long discoveryTimeout,
@@ -45,7 +47,8 @@ class NearDiscoveryImpl implements NearDiscovery {
         mPingInterval = discoverablePingInterval;
         mListener = listener;
         mListenerLooper = looper;
-        this.context = context;
+        mContext = context;
+        mCurrentPeers = new ArraySet<>();
     }
 
     @Override
@@ -82,30 +85,30 @@ class NearDiscoveryImpl implements NearDiscovery {
     }
 
     private void beDiscoverable(String hostName) {
-        Intent intent = new Intent(context.getApplicationContext(), UdpBroadcastService.class);
+        Intent intent = new Intent(mContext.getApplicationContext(), UdpBroadcastService.class);
         intent.putExtra(UdpBroadcastService.BUNDLE_NAME, hostName);
         intent.putExtra(UdpBroadcastService.BUNDLE_ACTION, UdpBroadcastService.ACTION_START_BROADCAST);
         intent.putExtra(UdpBroadcastService.BUNDLE_INTERVAL, mPingInterval);
-        context.startService(intent);
+        mContext.startService(intent);
         mDiscoverable = true;
     }
 
     private void stopBeingDiscoverable() {
-        Intent intent = new Intent(context.getApplicationContext(), UdpBroadcastService.class);
+        Intent intent = new Intent(mContext.getApplicationContext(), UdpBroadcastService.class);
         intent.putExtra(UdpBroadcastService.BUNDLE_ACTION, UdpBroadcastService.ACTION_STOP_BROADCAST);
-        context.startService(intent);
+        mContext.startService(intent);
         mDiscoverable = false;
     }
 
     @Override
     public void startDiscovery() {
         if (!mDiscovering) {
-            Intent intent = new Intent(context.getApplicationContext(), UdpServerService.class);
+            Intent intent = new Intent(mContext.getApplicationContext(), UdpServerService.class);
             intent.putExtra(UdpServerService.BUNDLE_COMMAND, UdpServerService.COMMAND_START_SERVER);
-            context.startService(intent);
+            mContext.startService(intent);
             mDiscovering = true;
 
-            context.bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
+            mContext.bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
 
             mDiscoveryDisposable = Observable.timer(mDiscoveryTimeout, TimeUnit.MILLISECONDS, Schedulers.io())
                     .subscribe(new Consumer<Long>() {
@@ -130,18 +133,17 @@ class NearDiscoveryImpl implements NearDiscovery {
     @Override
     public void stopDiscovery() {
         if (mDiscovering) {
-            context.unbindService(mServerConnection);
+            mContext.unbindService(mServerConnection);
 
-            Intent intent = new Intent(context.getApplicationContext(), UdpServerService.class);
+            Intent intent = new Intent(mContext.getApplicationContext(), UdpServerService.class);
             intent.putExtra(UdpServerService.BUNDLE_COMMAND, UdpServerService.COMMAND_STOP_SERVER);
-            context.startService(intent);
+            mContext.startService(intent);
             mDiscovering = false;
 
             mDiscoveryDisposable.dispose();
         }
     }
 
-    private Set<Host> mCurrentPeers;
     private ServiceConnection mServerConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
@@ -165,13 +167,14 @@ class NearDiscoveryImpl implements NearDiscovery {
                 }
 
                 @Override
-                public void onHostsUpdate(final Set<Host> currentHosts) {
+                public void onHostsUpdate(Set<Host> currentHosts) {
+                    mCurrentPeers.retainAll(currentHosts);
+                    mCurrentPeers.addAll(currentHosts);
                     if (mListener != null && mListenerLooper != null) {
-                        mCurrentPeers = currentHosts;
                         new Handler(mListenerLooper).post(new Runnable() {
                             @Override
                             public void run() {
-                                mListener.onPeersUpdate(currentHosts);
+                                mListener.onPeersUpdate(mCurrentPeers);
                             }
                         });
                     }

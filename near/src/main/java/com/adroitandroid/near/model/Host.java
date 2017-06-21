@@ -6,6 +6,7 @@ package com.adroitandroid.near.model;
 
 import java.net.InetAddress;
 
+//TODO: make this parcelable
 public class Host {
 
     private final InetAddress inetAddress;
