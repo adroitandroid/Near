@@ -41,7 +41,7 @@ public interface NearDiscovery {
             return this;
         }
 
-        public Builder setDiscoverablePingInterval(long discoverablePingInterval) {
+        public Builder setDiscoverablePingIntervalMillis(long discoverablePingInterval) {
             this.mDiscoverablePingInterval = discoverablePingInterval;
             return this;
         }

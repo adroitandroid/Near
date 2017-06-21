@@ -58,12 +58,14 @@ class ParticipantsAdapter extends RecyclerView.Adapter<ParticipantsAdapter.Parti
 
     @Override
     public int getItemCount() {
-        return mParticipants.size() + 1;
+        return mParticipants.size() == 0 ? 0 : mParticipants.size() + 1;
     }
 
     public void setData(Set<Host> hosts) {
         mParticipants = new ArrayList<>(hosts);
-        notifyDataSetChanged();
+        if (hosts.size() > 0) {
+            notifyDataSetChanged();
+        }
     }
 
     class ParticipantVH extends RecyclerView.ViewHolder {

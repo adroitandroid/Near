@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -169,9 +170,13 @@ public class UdpServerService extends Service {
                 //Keep a socket open to listen to all the UDP traffic that is destined for this port
                 try {
                     if (mSocket == null) {
-                        mSocket = new DatagramSocket(8888, InetAddress.getByName("0.0.0.0"));
+                        mSocket = new DatagramSocket(null);
+                        InetSocketAddress socketAddress
+                                = new InetSocketAddress(InetAddress.getByName("0.0.0.0"), 8888);
+                        mSocket.setReuseAddress(true);
                         mSocket.setBroadcast(true);
                         mSocket.setSoTimeout(0); // infinitely wait for data
+                        mSocket.bind(socketAddress);
                     }
 
                     //Receive a packet
@@ -260,6 +265,9 @@ public class UdpServerService extends Service {
         }
 
         private void stop() {
+            for (StaleHostHandler handler : mHostHandlerMap.values()) {
+                handler.removeMessages(StaleHostHandler.STALE_HOST);
+            }
             mListener = null;
             mSocket.close();
             mSocket = null;

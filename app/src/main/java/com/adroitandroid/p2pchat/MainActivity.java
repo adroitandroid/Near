@@ -35,7 +35,7 @@ public class MainActivity extends AppCompatActivity {
                 .setContext(this)
                 .setDiscoverableTimeoutMillis(DISCOVERABLE_TIMEOUT_MILLIS)
                 .setDiscoveryTimeoutMillis(DISCOVERY_TIMEOUT_MILLIS)
-                .setDiscoverablePingInterval(DISCOVERABLE_PING_INTERVAL_MILLIS)
+                .setDiscoverablePingIntervalMillis(DISCOVERABLE_PING_INTERVAL_MILLIS)
                 .setDiscoveryListener(new NearDiscovery.Listener() {
                     @Override
                     public void onPeersUpdate(Set<Host> hosts) {

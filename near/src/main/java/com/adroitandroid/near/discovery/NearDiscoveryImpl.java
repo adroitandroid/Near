@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
 import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 
@@ -31,6 +32,8 @@ class NearDiscoveryImpl implements NearDiscovery {
     private final Context context;
     private boolean mDiscoverable;
     private boolean mDiscovering;
+    private Disposable mDiscoverableDisposable;
+    private Disposable mDiscoveryDisposable;
 
     NearDiscoveryImpl(long discoverableTimeout,
                       long discoveryTimeout,
@@ -47,29 +50,35 @@ class NearDiscoveryImpl implements NearDiscovery {
 
     @Override
     public void makeDiscoverable(String hostName) {
-        beDiscoverable(hostName);
-        Observable.timer(mDiscoverableTimeout, TimeUnit.MILLISECONDS, Schedulers.io()).subscribe(
-                new Consumer<Long>() {
-                    @Override
-                    public void accept(@NonNull Long aLong) throws Exception {
-                        if (mDiscoverable) {
-                            stopBeingDiscoverable();
-                            if (mListenerLooper != null && mListener != null) {
-                                new Handler(mListenerLooper).post(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        mListener.onDiscoverableTimeout();
-                                    }
-                                });
+        if (!mDiscoverable) {
+            beDiscoverable(hostName);
+            mDiscoverableDisposable
+                    = Observable.timer(mDiscoverableTimeout, TimeUnit.MILLISECONDS, Schedulers.io())
+                    .subscribe(new Consumer<Long>() {
+                        @Override
+                        public void accept(@NonNull Long aLong) throws Exception {
+                            if (mDiscoverable) {
+                                stopBeingDiscoverable();
+                                if (mListenerLooper != null && mListener != null) {
+                                    new Handler(mListenerLooper).post(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            mListener.onDiscoverableTimeout();
+                                        }
+                                    });
+                                }
                             }
                         }
-                    }
-                });
+                    });
+        }
     }
 
     @Override
     public void makeNonDiscoverable() {
-        stopBeingDiscoverable();
+        if (mDiscoverable) {
+            stopBeingDiscoverable();
+            mDiscoverableDisposable.dispose();
+        }
     }
 
     private void beDiscoverable(String hostName) {
@@ -98,7 +107,7 @@ class NearDiscoveryImpl implements NearDiscovery {
 
             context.bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
 
-            Observable.timer(mDiscoveryTimeout, TimeUnit.MILLISECONDS, Schedulers.io())
+            mDiscoveryDisposable = Observable.timer(mDiscoveryTimeout, TimeUnit.MILLISECONDS, Schedulers.io())
                     .subscribe(new Consumer<Long>() {
                         @Override
                         public void accept(@NonNull Long aLong) throws Exception {
@@ -127,6 +136,8 @@ class NearDiscoveryImpl implements NearDiscovery {
             intent.putExtra(UdpServerService.BUNDLE_COMMAND, UdpServerService.COMMAND_STOP_SERVER);
             context.startService(intent);
             mDiscovering = false;
+
+            mDiscoveryDisposable.dispose();
         }
     }
 
