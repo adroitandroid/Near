@@ -52,7 +52,7 @@ public class TcpServerService extends Service {
         mWakeLock.acquire();
         final Looper myLooper = Looper.myLooper();
 
-        HandlerThread handlerThread = new HandlerThread("TcpServerThread") {
+        new HandlerThread("TcpServerThread") {
             @Override
             protected void onLooperPrepared() {
                 new Handler(getLooper()).post(new Runnable() {
@@ -89,8 +89,7 @@ public class TcpServerService extends Service {
                     }
                 });
             }
-        };
-        handlerThread.start();
+        }.start();
     }
 
     private void onNewReceive(final Socket connectionSocket,

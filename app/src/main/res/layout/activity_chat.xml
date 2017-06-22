@@ -39,7 +39,8 @@
                 android:id="@+id/send_btn"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end" />
+                android:layout_gravity="end"
+                android:text="Send" />
         </LinearLayout>
     </LinearLayout>
 </layout>

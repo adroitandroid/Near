@@ -1,6 +1,7 @@
 package com.adroitandroid.p2pchat;
 
 import android.app.Activity;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
@@ -11,6 +12,7 @@ import android.support.v4.util.ArraySet;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import com.adroitandroid.near.connect.NearConnect;
@@ -56,6 +58,12 @@ public class ChatActivity extends AppCompatActivity {
         binding.chatRv.setLayoutManager(new LinearLayoutManager(this));
         mChatAdapter = new ChatAdapter();
         binding.chatRv.setAdapter(mChatAdapter);
+        mChatAdapter.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+            @Override
+            public void onItemRangeInserted(int positionStart, int itemCount) {
+                binding.chatRv.scrollToPosition(positionStart);
+            }
+        });
 
         mParticipant = getIntent().getParcelableExtra(BUNDLE_PARTICIPANT);
         setTitle("Chat with " + mParticipant.getName());
@@ -83,6 +91,15 @@ public class ChatActivity extends AppCompatActivity {
                     switch (data) {
                         case STATUS_TYPING:
                             binding.statusTv.setVisibility(View.VISIBLE);
+                            mStatusDisposable.dispose();
+                            mStatusDisposable = Observable.timer(1, TimeUnit.SECONDS)
+                                    .observeOn(AndroidSchedulers.mainThread())
+                                    .subscribe(new Consumer<Long>() {
+                                        @Override
+                                        public void accept(@io.reactivex.annotations.NonNull Long aLong) throws Exception {
+                                            binding.statusTv.setVisibility(View.INVISIBLE);
+                                        }
+                                    });
                             break;
                         case STATUS_STOPPED_TYPING:
                             binding.statusTv.setVisibility(View.INVISIBLE);
@@ -92,7 +109,14 @@ public class ChatActivity extends AppCompatActivity {
                             binding.msgLl.setVisibility(View.GONE);
                             new AlertDialog.Builder(ChatActivity.this)
                                     .setMessage(String.format("%s has left the chat.", sender.getName()))
-                                    .setNeutralButton("Ok", null).create();
+                                    .setNeutralButton("Ok", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            mNearConnect.stopReceiving(true);
+                                            ChatActivity.this.setResult(RESULT_OK);
+                                            ChatActivity.this.finish();
+                                        }
+                                    }).create().show();
                             break;
                         default:
                             if (data.startsWith(MSG_PREFIX)) {
@@ -129,6 +153,7 @@ public class ChatActivity extends AppCompatActivity {
                 String message = binding.msgEt.getText().toString();
                 mNearConnect.send((MSG_PREFIX + message).getBytes(), mParticipant);
                 mChatAdapter.addMessage(message, "You");
+                binding.msgEt.setText("");
             }
         });
         RxTextView.textChanges(binding.msgEt)
@@ -158,7 +183,7 @@ public class ChatActivity extends AppCompatActivity {
                         }
                     }
                 });
-        mStatusDisposable = Observable.interval(750, TimeUnit.MILLISECONDS)
+        mStatusDisposable = Observable.timer(0, TimeUnit.SECONDS)
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<Long>() {
                     @Override
@@ -169,10 +194,9 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
+    public void onBackPressed() {
+        super.onBackPressed();
         mNearConnect.send(STATUS_EXIT_CHAT.getBytes(), mParticipant);
         mNearConnect.stopReceiving(true);
-        mStatusDisposable.dispose();
     }
 }
