@@ -192,4 +192,14 @@ class NearDiscoveryImpl implements NearDiscovery {
     public Set<Host> getAllAvailablePeers() {
         return mCurrentPeers;
     }
+
+    @Override
+    public boolean isDiscoverable() {
+        return mDiscoverable;
+    }
+
+    @Override
+    public boolean isDiscovering() {
+        return mDiscovering;
+    }
 }

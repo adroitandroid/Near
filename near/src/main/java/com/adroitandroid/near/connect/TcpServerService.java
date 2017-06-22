@@ -14,6 +14,7 @@ import android.support.annotation.Nullable;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -24,8 +25,8 @@ import java.net.Socket;
 public class TcpServerService extends Service {
     static final int SERVER_PORT = 6789;
     private boolean mStarted;
-    private HandlerThread mHandlerThread;
     private PowerManager.WakeLock mWakeLock;
+    private ServerSocket mServerSocket;
 
     @Nullable
     @Override
@@ -51,21 +52,22 @@ public class TcpServerService extends Service {
         mWakeLock.acquire();
         final Looper myLooper = Looper.myLooper();
 
-        mHandlerThread = new HandlerThread("TcpServerThread") {
+        HandlerThread handlerThread = new HandlerThread("TcpServerThread") {
             @Override
             protected void onLooperPrepared() {
                 new Handler(getLooper()).post(new Runnable() {
                     @Override
                     public void run() {
-                        ServerSocket socket = null;
+                        mServerSocket = null;
                         try {
-                            socket = new ServerSocket(SERVER_PORT);
-                            socket.setSoTimeout(0);
+                            mServerSocket = new ServerSocket();
+                            mServerSocket.setReuseAddress(true);
+                            mServerSocket.setSoTimeout(0);
+                            mServerSocket.bind(new InetSocketAddress(SERVER_PORT));
 
                             while (mStarted) {
-                                Socket connectionSocket;
                                 try {
-                                    connectionSocket = socket.accept();
+                                    Socket connectionSocket = mServerSocket.accept();
                                     onNewReceive(connectionSocket, myLooper, listener);
                                 } catch (IOException e) {
                                     e.printStackTrace();
@@ -74,19 +76,21 @@ public class TcpServerService extends Service {
                         } catch (IOException e) {
                             e.printStackTrace();
                             listener.onStartFailure(e);
-                            if (socket != null) {
+                        } finally {
+                            if (mServerSocket != null && !mServerSocket.isClosed()) {
                                 try {
-                                    socket.close();
+                                    mServerSocket.close();
                                 } catch (IOException e1) {
                                     e1.printStackTrace();
                                 }
                             }
+                            getLooper().quitSafely();
                         }
                     }
                 });
             }
         };
-        mHandlerThread.start();
+        handlerThread.start();
     }
 
     private void onNewReceive(final Socket connectionSocket,
@@ -133,7 +137,21 @@ public class TcpServerService extends Service {
     private void stopServer() {
         mStarted = false;
         mWakeLock.release();
-        mHandlerThread.quitSafely();
+        new HandlerThread("ServerTerminator") {
+            @Override
+            protected void onLooperPrepared() {
+                new Handler(getLooper()).post(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            mServerSocket.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+            }
+        }.start();
     }
 
     static abstract class TcpServerListener {

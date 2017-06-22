@@ -1,6 +1,7 @@
 package com.adroitandroid.p2pchat;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.os.Looper;
@@ -55,6 +56,9 @@ public class MainActivity extends AppCompatActivity {
                     if (binding.handleEt.getText().length() > 0) {
                         mNearDiscovery.makeDiscoverable(binding.handleEt.getText().toString());
                         startDiscovery();
+                        if (!mNearConnect.isReceiving()) {
+                            mNearConnect.startReceiving();
+                        }
                     } else {
                         Snackbar.make(binding.getRoot(), "Please type in a handle first",
                                 Snackbar.LENGTH_INDEFINITE).show();
@@ -67,7 +71,6 @@ public class MainActivity extends AppCompatActivity {
                 .fromDiscovery(mNearDiscovery)
                 .setContext(this).setListener(getNearConnectListener(), Looper.getMainLooper())
                 .build();
-        mNearConnect.startReceiving();
 
         mParticipantsAdapter = new ParticipantsAdapter(new ParticipantsAdapter.Listener() {
             @Override
@@ -124,10 +127,8 @@ public class MainActivity extends AppCompatActivity {
                                     .setPositiveButton("Start", new DialogInterface.OnClickListener() {
                                         @Override
                                         public void onClick(DialogInterface dialog, int which) {
-                                            mNearDiscovery.stopDiscovery();
                                             mNearConnect.send(MESSAGE_RESPONSE_ACCEPT_REQUEST.getBytes(), sender);
-                                            mNearConnect.stopReceiving(true);
-                                            ChatActivity.start(MainActivity.this, sender);
+                                            stopNearServicesAndStartChat(sender);
                                         }
                                     })
                                     .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
@@ -143,9 +144,7 @@ public class MainActivity extends AppCompatActivity {
                                     .setNeutralButton("Ok", null).create().show();
                             break;
                         case MESSAGE_RESPONSE_ACCEPT_REQUEST:
-                            mNearDiscovery.stopDiscovery();
-                            mNearConnect.stopReceiving(true);
-                            ChatActivity.start(MainActivity.this, sender);
+                            stopNearServicesAndStartChat(sender);
                             break;
                     }
                 }
@@ -166,6 +165,12 @@ public class MainActivity extends AppCompatActivity {
 
             }
         };
+    }
+
+    private void stopNearServicesAndStartChat(Host sender) {
+        mNearConnect.stopReceiving(true);
+        mNearDiscovery.stopDiscovery();
+        ChatActivity.start(MainActivity.this, sender);
     }
 
     @Override
@@ -197,5 +202,10 @@ public class MainActivity extends AppCompatActivity {
         binding.participantsRv.setVisibility(View.VISIBLE);
         binding.discoveryPb.setVisibility(View.VISIBLE);
         binding.startChattingBtn.setText("Stop Searching");
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        mNearConnect.startReceiving();
     }
 }

@@ -23,6 +23,10 @@ public interface NearDiscovery {
 
     Set<Host> getAllAvailablePeers();
 
+    boolean isDiscoverable();
+
+    boolean isDiscovering();
+
     class Builder {
         private long mDiscoverableTimeout = 60000;
         private long mDiscoveryTimeout = 60000;

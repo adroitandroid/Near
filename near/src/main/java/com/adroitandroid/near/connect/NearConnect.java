@@ -22,6 +22,8 @@ public interface NearConnect {
 
     Set<Host> getPeers();
 
+    boolean isReceiving();
+
     class Builder {
         private Context mContext;
         private Listener mListener;

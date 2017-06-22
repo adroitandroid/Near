@@ -46,7 +46,7 @@ public class ChatActivity extends AppCompatActivity {
     public static void start(Activity activity, Host participant) {
         Intent intent = new Intent(activity, ChatActivity.class);
         intent.putExtra(BUNDLE_PARTICIPANT, participant);
-        activity.startActivity(intent);
+        activity.startActivityForResult(intent, 1234);
     }
 
     @Override
