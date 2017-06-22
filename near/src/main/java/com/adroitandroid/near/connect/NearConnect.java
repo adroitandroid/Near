@@ -14,7 +14,7 @@ import java.util.Set;
 
 public interface NearConnect {
 
-    void send(byte[] bytes, Host peer);
+    long send(byte[] bytes, Host peer);
 
     void startReceiving();
 
@@ -48,6 +48,11 @@ public interface NearConnect {
             return this;
         }
 
+        public Builder forPeers(Set<Host> peers) {
+            mPeers = peers;
+            return this;
+        }
+
         public NearConnect build() {
             return new NearConnectImpl(mContext, mListener, mListenerLooper, mPeers);
         }
@@ -56,9 +61,9 @@ public interface NearConnect {
     interface Listener {
         void onReceive(byte[] bytes, Host sender);
 
-        void onSendComplete();
+        void onSendComplete(long jobId);
 
-        void onSendFailure(Throwable e);
+        void onSendFailure(Throwable e, long jobId);
 
         void onStartListenFailure(Throwable e);
     }

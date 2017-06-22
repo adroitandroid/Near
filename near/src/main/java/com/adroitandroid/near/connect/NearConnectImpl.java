@@ -29,6 +29,7 @@ class NearConnectImpl implements NearConnect {
     private int mServerState;
     private List<byte[]> sendDataQueue = new ArrayList<>();
     private List<Host> sendDestQueue = new ArrayList<>();
+    private List<Long> sendJobQueue = new ArrayList<>();
 
     NearConnectImpl(Context context, Listener listener, Looper looper, Set<Host> peers) {
         mContext = context;
@@ -44,24 +45,24 @@ class NearConnectImpl implements NearConnect {
                 TcpClientService.TcpClientBinder binder = (TcpClientService.TcpClientBinder) service;
                 binder.setListener(new TcpClientService.Listener() {
                     @Override
-                    public void onSendSuccess() {
+                    public void onSendSuccess(final long jobId) {
                         if (mListenerLooper != null && mListener != null) {
                             new Handler(mListenerLooper).post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    mListener.onSendComplete();
+                                    mListener.onSendComplete(jobId);
                                 }
                             });
                         }
                     }
 
                     @Override
-                    public void onSendFailure(final Throwable e) {
+                    public void onSendFailure(final long jobId, final Throwable e) {
                         if (mListenerLooper != null && mListener != null) {
                             new Handler(mListenerLooper).post(new Runnable() {
                                 @Override
                                 public void run() {
-                                    mListener.onSendFailure(e);
+                                    mListener.onSendFailure(e, jobId);
                                 }
                             });
                         }
@@ -69,14 +70,16 @@ class NearConnectImpl implements NearConnect {
                 }, Looper.myLooper());
                 byte[] candidateData = null;
                 Host candidateHost = null;
+                long jobId = 0;
                 while (sendDataQueue.size() > 0) {
                     synchronized (this) {
                         if (sendDataQueue.size() > 0) {
                             candidateData = sendDataQueue.remove(0);
                             candidateHost = sendDestQueue.remove(0);
+                            jobId = sendJobQueue.remove(0);
                         }
                     }
-                    binder.send(candidateData, candidateHost);
+                    binder.send(candidateData, candidateHost, jobId);
                 }
                 mContext.unbindService(this);
             }
@@ -89,62 +92,75 @@ class NearConnectImpl implements NearConnect {
     };
 
     @Override
-    public void send(byte[] bytes, Host peer) {
+    public long send(byte[] bytes, Host peer) {
+        long jobId = System.currentTimeMillis();
         synchronized (this) {
             sendDataQueue.add(bytes);
             sendDestQueue.add(peer);
+            sendJobQueue.add(jobId);
         }
 
         Intent intent = new Intent(mContext.getApplicationContext(), TcpClientService.class);
         mContext.startService(intent);
 
         mContext.bindService(intent, mClientConnection, Context.BIND_AUTO_CREATE);
+
+        return jobId;
     }
 
-    private ServiceConnection mServerConnection = new ServiceConnection() {
+    private ServiceConnection mStartServerConnection = new ServiceConnection() {
         @Override
         public void onServiceConnected(ComponentName name, IBinder service) {
-            if (service instanceof TcpServerService.TcpServerBinder) {
+            if (service instanceof TcpServerService.TcpServerBinder && mServerState == SERVER_STARTED) {
                 TcpServerService.TcpServerBinder binder = (TcpServerService.TcpServerBinder) service;
-                switch (mServerState) {
-                    case SERVER_STARTED:
-                        binder.setListener(new TcpServerService.TcpServerListener() {
+                binder.setListener(new TcpServerService.TcpServerListener() {
 
-                            @Override
-                            public void onServerStartFailed(final Throwable e) {
-                                if (mListener != null && mListenerLooper != null) {
-                                    new Handler(mListenerLooper).post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            mListener.onStartListenFailure(e);
-                                        }
-                                    });
+                    @Override
+                    public void onServerStartFailed(final Throwable e) {
+                        if (mListener != null && mListenerLooper != null) {
+                            new Handler(mListenerLooper).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    mListener.onStartListenFailure(e);
                                 }
-                            }
+                            });
+                        }
+                    }
 
-                            @Override
-                            void onReceive(final byte[] bytes, final InetAddress inetAddress) {
-                                if (mListener != null && mListenerLooper != null) {
-                                    new Handler(mListenerLooper).post(new Runnable() {
-                                        @Override
-                                        public void run() {
-                                            for (Host peer : mPeers) {
-                                                if (peer.getHostAddress().equals(inetAddress.getHostAddress())) {
-                                                    mListener.onReceive(bytes, peer);
-                                                }
-                                            }
+                    @Override
+                    void onReceive(final byte[] bytes, final InetAddress inetAddress) {
+                        if (mListener != null && mListenerLooper != null) {
+                            new Handler(mListenerLooper).post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    for (Host peer : mPeers) {
+                                        if (peer.getHostAddress().equals(inetAddress.getHostAddress())) {
+                                            mListener.onReceive(bytes, peer);
                                         }
-                                    });
+                                    }
                                 }
-                            }
-                        });
-                        binder.startServer();
-                        break;
-                    case SERVER_STOPPED:
-                        binder.stopServer();
-                        mContext.unbindService(this);
-                        break;
-                }
+                            });
+                        }
+                    }
+                });
+                binder.startServer();
+            }
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+
+        }
+    };
+
+    private ServiceConnection mStopServerConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            if (service instanceof TcpServerService.TcpServerBinder && mServerState == SERVER_STOPPED) {
+                TcpServerService.TcpServerBinder binder = (TcpServerService.TcpServerBinder) service;
+                binder.stopServer();
+                mContext.unbindService(this);
+                mContext.unbindService(mStartServerConnection);
             }
         }
 
@@ -161,16 +177,19 @@ class NearConnectImpl implements NearConnect {
             Intent intent = new Intent(mContext.getApplicationContext(), TcpServerService.class);
             mContext.startService(intent);
 
-            mContext.bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE);
+            mContext.bindService(intent, mStartServerConnection, Context.BIND_AUTO_CREATE);
         }
     }
 
     @Override
     public void stopReceiving(boolean abortCurrentTransfers) {
+//        TODO: handle abort param
         if (mServerState != SERVER_STOPPED) {
             mServerState = SERVER_STOPPED;
             Intent intent = new Intent(mContext.getApplicationContext(), TcpServerService.class);
             mContext.startService(intent);
+
+            mContext.bindService(intent, mStopServerConnection, Context.BIND_AUTO_CREATE);
         }
     }
 

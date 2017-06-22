@@ -25,6 +25,9 @@ public class MainActivity extends AppCompatActivity {
     private static final long DISCOVERABLE_TIMEOUT_MILLIS = 60000;
     private static final long DISCOVERY_TIMEOUT_MILLIS = 10000;
     private static final long DISCOVERABLE_PING_INTERVAL_MILLIS = 5000;
+    public static final String MESSAGE_REQUEST_START_CHAT = "start_chat";
+    public static final String MESSAGE_RESPONSE_DECLINE_REQUEST = "decline_request";
+    public static final String MESSAGE_RESPONSE_ACCEPT_REQUEST = "accept_request";
     private NearDiscovery mNearDiscovery;
     private NearConnect mNearConnect;
     private ActivityMainBinding binding;
@@ -69,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         mParticipantsAdapter = new ParticipantsAdapter(new ParticipantsAdapter.Listener() {
             @Override
             public void sendChatRequest(Host host) {
-                mNearConnect.send(getStartChatRequest().getBytes(), host);
+                mNearConnect.send(MESSAGE_REQUEST_START_CHAT.getBytes(), host);
             }
         });
         binding.participantsRv.setLayoutManager(new LinearLayoutManager(this));
@@ -112,33 +115,49 @@ public class MainActivity extends AppCompatActivity {
     private NearConnect.Listener getNearConnectListener() {
         return new NearConnect.Listener() {
             @Override
-            public void onReceive(byte[] bytes, Host sender) {
-                if (bytes != null && new String(bytes).equals(getStartChatRequest())) {
-                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this)
-                            .setMessage(sender.getName() + " would like to start chatting with you.")
-                            .setPositiveButton("Start", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-//                                            TODO: send request accepted response
-                                }
-                            })
-                            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialog, int which) {
-//                                            TODO: send request cancel response
-                                }
-                            });
-                    builder.create().show();
+            public void onReceive(byte[] bytes, final Host sender) {
+                if (bytes != null) {
+                    switch (new String(bytes)) {
+                        case MESSAGE_REQUEST_START_CHAT:
+                            new AlertDialog.Builder(MainActivity.this)
+                                    .setMessage(sender.getName() + " would like to start chatting with you.")
+                                    .setPositiveButton("Start", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            mNearDiscovery.stopDiscovery();
+                                            mNearConnect.send(MESSAGE_RESPONSE_ACCEPT_REQUEST.getBytes(), sender);
+                                            mNearConnect.stopReceiving(true);
+                                            ChatActivity.start(MainActivity.this, sender);
+                                        }
+                                    })
+                                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            mNearConnect.send(MESSAGE_RESPONSE_DECLINE_REQUEST.getBytes(), sender);
+                                        }
+                                    }).create().show();
+                            break;
+                        case MESSAGE_RESPONSE_DECLINE_REQUEST:
+                            new AlertDialog.Builder(MainActivity.this)
+                                    .setMessage(sender.getName() + " is busy at the moment.")
+                                    .setNeutralButton("Ok", null).create().show();
+                            break;
+                        case MESSAGE_RESPONSE_ACCEPT_REQUEST:
+                            mNearDiscovery.stopDiscovery();
+                            mNearConnect.stopReceiving(true);
+                            ChatActivity.start(MainActivity.this, sender);
+                            break;
+                    }
                 }
             }
 
             @Override
-            public void onSendComplete() {
+            public void onSendComplete(long jobId) {
 
             }
 
             @Override
-            public void onSendFailure(Throwable e) {
+            public void onSendFailure(Throwable e, long jobId) {
 
             }
 
@@ -154,10 +173,6 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         mNearDiscovery.stopDiscovery();
         mNearConnect.stopReceiving(true);
-    }
-
-    private String getStartChatRequest() {
-        return "start_chat";
     }
 
     private void stopDiscovery() {

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <data>
+
+        <import type="android.view.View" />
+
+        <variable
+            name="sender"
+            type="String" />
+
+        <variable
+            name="message"
+            type="String" />
+
+        <variable
+            name="userIsSender"
+            type="Boolean" />
+    </data>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <View
+            android:layout_width="100dp"
+            android:layout_height="0dp"
+            android:visibility="@{userIsSender ? View.VISIBLE : View.GONE}" />
+
+        <android.support.v7.widget.CardView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="8dp"
+            android:layout_weight="1"
+            app:contentPadding="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/sender_tv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text='@{String.format("%s:", sender)}'
+                    android:textAllCaps="true"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/msg_tv"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:paddingTop="4dp"
+                    android:text="@{message}"
+                    android:textSize="14sp" />
+            </LinearLayout>
+
+        </android.support.v7.widget.CardView>
+
+        <View
+            android:layout_width="100dp"
+            android:layout_height="0dp"
+            android:visibility="@{userIsSender ? View.GONE : View.VISIBLE}" />
+    </LinearLayout>
+</layout>

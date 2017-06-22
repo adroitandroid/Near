@@ -36,13 +36,14 @@ public class TcpClientService extends Service {
     public void onCreate() {
         super.onCreate();
         PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TcpServerService");
+        mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TcpClientService");
     }
 
     private void send(final byte[] data,
                       final Host destination,
                       final Listener listener,
-                      final Looper listenerLooper) {
+                      final Looper listenerLooper,
+                      final long jobId) {
         InetAddress destAddress;
         Socket socket = null;
         mWakeLock.acquire();
@@ -58,7 +59,7 @@ public class TcpClientService extends Service {
             new Handler(listenerLooper).post(new Runnable() {
                 @Override
                 public void run() {
-                    listener.onSendSuccess();
+                    listener.onSendSuccess(jobId);
                 }
             });
         } catch (final IOException e) {
@@ -67,7 +68,7 @@ public class TcpClientService extends Service {
             new Handler(listenerLooper).post(new Runnable() {
                 @Override
                 public void run() {
-                    listener.onSendFailure(e);
+                    listener.onSendFailure(jobId, e);
                 }
             });
         } finally {
@@ -86,14 +87,14 @@ public class TcpClientService extends Service {
         private Listener mListener;
         private Looper mListenerLooper;
 
-        void send(final byte[] data, final Host destination) {
+        void send(final byte[] data, final Host destination, final long jobId) {
             new HandlerThread("TcpClientThread") {
                 @Override
                 protected void onLooperPrepared() {
                     new Handler(getLooper()).post(new Runnable() {
                         @Override
                         public void run() {
-                            TcpClientService.this.send(data, destination, mListener, mListenerLooper);
+                            TcpClientService.this.send(data, destination, mListener, mListenerLooper, jobId);
                             getLooper().quitSafely();
                         }
                     });
@@ -108,8 +109,8 @@ public class TcpClientService extends Service {
     }
 
     interface Listener {
-        void onSendSuccess();
+        void onSendSuccess(long jobId);
 
-        void onSendFailure(Throwable e);
+        void onSendFailure(long jobId, Throwable e);
     }
 }
