@@ -69,7 +69,8 @@ public class MainActivity extends AppCompatActivity {
 
         mNearConnect = new NearConnect.Builder()
                 .fromDiscovery(mNearDiscovery)
-                .setContext(this).setListener(getNearConnectListener(), Looper.getMainLooper())
+                .setContext(this)
+                .setListener(getNearConnectListener(), Looper.getMainLooper())
                 .build();
 
         mParticipantsAdapter = new ParticipantsAdapter(new ParticipantsAdapter.Listener() {

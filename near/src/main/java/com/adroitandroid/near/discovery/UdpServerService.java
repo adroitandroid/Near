@@ -37,6 +37,7 @@ import java.util.Set;
 
 public class UdpServerService extends Service {
     public static final String BUNDLE_COMMAND = "bundle_command";
+    public static final String BUNDLE_STALE_TIMEOUT = "bundle_stale_timeout";
     private static final String BUNDLE_IS_HOST_CLIENT = "bundle_host_is_client_too";
     public static final String COMMAND_START_SERVER = "start_server";
     public static final String COMMAND_STOP_SERVER = "stop_server";
@@ -44,11 +45,13 @@ public class UdpServerService extends Service {
     private ArrayMap<Host, StaleHostHandler> mHostHandlerMap = new ArrayMap<>();
     private Set<String> mCurrentHostIps = Collections.synchronizedSet(new ArraySet<String>());
     private ConnectivityChangeReceiver mConnectivityChangeReceiver;
+    private long mStaleTimeout;
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (intent != null) {
             if (COMMAND_START_SERVER.equals(intent.getStringExtra(BUNDLE_COMMAND))) {
+                mStaleTimeout = intent.getLongExtra(BUNDLE_STALE_TIMEOUT, 10000);
                 startBroadcastListening(intent.getBooleanExtra(BUNDLE_IS_HOST_CLIENT, false));
             } else if (COMMAND_STOP_SERVER.equals(intent.getStringExtra(BUNDLE_COMMAND))) {
                 UdpBroadcastListeningHandler.stopListeningForBroadcasts();
@@ -118,7 +121,8 @@ public class UdpServerService extends Service {
     }
 
     private void startBroadcastListening(boolean isHostClientToo) {
-        UdpBroadcastListeningHandler.startBroadcastListening(mHostHandlerMap, mCurrentHostIps, isHostClientToo);
+        UdpBroadcastListeningHandler.startBroadcastListening(mHostHandlerMap, mCurrentHostIps,
+                isHostClientToo, mStaleTimeout);
     }
 
     private static class UdpBroadcastListeningHandler extends Handler {
@@ -129,13 +133,15 @@ public class UdpServerService extends Service {
         private ArrayMap<Host, StaleHostHandler> mHostHandlerMap;
         private Set<String> mCurrentIps;
         private boolean isHostClientToo;
+        private long mStaleTimeout;
 
         UdpBroadcastListeningHandler(Looper looper) {
             super(looper);
         }
 
         static void startBroadcastListening(final ArrayMap<Host, StaleHostHandler> hostHandlerMap,
-                                            final Set<String> currentHostIps, final boolean isHostClientToo) {
+                                            final Set<String> currentHostIps,
+                                            final boolean isHostClientToo, final long staleTimeout) {
             HandlerThread handlerThread = new HandlerThread("ServerService") {
                 @Override
                 protected void onLooperPrepared() {
@@ -143,6 +149,7 @@ public class UdpServerService extends Service {
                     handler.mHostHandlerMap = hostHandlerMap;
                     handler.mCurrentIps = currentHostIps;
                     handler.isHostClientToo = isHostClientToo;
+                    handler.mStaleTimeout = staleTimeout;
                     handler.sendEmptyMessage(UdpBroadcastListeningHandler.LISTEN);
                 }
             };
@@ -214,7 +221,7 @@ public class UdpServerService extends Service {
                             }
                         }
                         handler.removeMessages(StaleHostHandler.STALE_HOST);
-                        handler.sendEmptyMessageDelayed(StaleHostHandler.STALE_HOST, StaleHostHandler.STALE_INTERVAL);
+                        handler.sendEmptyMessageDelayed(StaleHostHandler.STALE_HOST, mStaleTimeout);
                     }
                 } catch (SocketException | UnknownHostException e) {
                     e.printStackTrace();
@@ -222,14 +229,6 @@ public class UdpServerService extends Service {
                         mSocket.close();
                         mSocket = null;
                     }
-//                    if (mListener != null) {
-//                        new Handler(Looper.getMainLooper()).post(new Runnable() {
-//                            @Override
-//                            public void run() {
-//                                mListener.onServerSetupFailed(e);
-//                            }
-//                        });
-//                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                     if (mListener != null) {
@@ -278,7 +277,6 @@ public class UdpServerService extends Service {
 
     private static class StaleHostHandler extends Handler {
         private static final int STALE_HOST = 9284;
-        private static final long STALE_INTERVAL = 10000;
         private final Host mHost;
         private final ArrayMap<Host, StaleHostHandler> mMap;
         private UdpBroadcastListener mListener;

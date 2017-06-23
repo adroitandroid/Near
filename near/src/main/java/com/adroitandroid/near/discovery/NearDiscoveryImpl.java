@@ -105,6 +105,7 @@ class NearDiscoveryImpl implements NearDiscovery {
         if (!mDiscovering) {
             Intent intent = new Intent(mContext.getApplicationContext(), UdpServerService.class);
             intent.putExtra(UdpServerService.BUNDLE_COMMAND, UdpServerService.COMMAND_START_SERVER);
+            intent.putExtra(UdpServerService.BUNDLE_STALE_TIMEOUT, mPingInterval * 2);
             mContext.startService(intent);
             mDiscovering = true;
 
