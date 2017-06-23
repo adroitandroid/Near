@@ -6,7 +6,7 @@ Near is a P2P library which allows
 ## Sample Usage
 ![Usage Demo GIF](near_demo.gif)
 
-Sample app, with the source code [here](app/) is [available on PlayStore](https://play.google.com/store/apps/details?id=com.adroitandroid.p2pchat&hl=en).
+Sample app, with the source code [here](app/) is [available on PlayStore](https://goo.gl/kioAiQ).
 
 ## NearDiscovery
 NearDiscovery takes hostname and a bunch of settings in a builder pattern for the discovery mechanism. A NearDiscovery object allows the following discovery related self-explanatory APIs:
