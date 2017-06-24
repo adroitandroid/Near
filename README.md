@@ -140,6 +140,7 @@ You can find the latest version [here](https://github.com/adroitandroid/Near/rel
 
 ## Limitations
 - File transfers aren't easy yet. Services are background, API to take notification to start them in foreground, and listener methods to publish updates are on the TODO list.
+- Current Min SDK is 21. Pulling it down, after testing, is again on the TODO list.
 
 ## License
 
