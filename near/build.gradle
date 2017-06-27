@@ -1,4 +1,7 @@
 apply plugin: 'com.android.library'
+apply plugin: 'com.github.dcendents.android-maven' // for JitPack
+
+group='com.github.adroitandroid' // for JitPack https://jitpack.io/docs/ANDROID/
 
 android {
     compileSdkVersion 25
