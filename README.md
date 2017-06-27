@@ -3,6 +3,11 @@ Near is a P2P library which allows
 * Discovery like Android NSD, though with greater reliability and easier-to-use *NearDiscovery* API
 * Transfers among clients through an easy-to-use *NearConnect* API
 
+## Sample Usage
+![Usage Demo GIF](near_demo.gif)
+
+Sample app, with the source code [here](app/) is [available on PlayStore](https://goo.gl/kioAiQ).
+
 ## NearDiscovery
 NearDiscovery takes hostname and a bunch of settings in a builder pattern for the discovery mechanism. A NearDiscovery object allows the following discovery related self-explanatory APIs:
 * ```void makeDiscoverable(String hostName);```
@@ -106,7 +111,39 @@ Again, the NearConnect.Builder.setListener() takes the Listener as the 1st argum
         };
     }
 ```
-It's required to stop listening on a previous instance of NearConnect (using NearConnect.stopReceiving()) so as to start listening on another (by using NearConnect.startReceiving()).
+It's required to stop listening on a previous instance of NearConnect (using NearConnect.stopReceiving()) so as to start listening on another instance (by using NearConnect.startReceiving()).
 This is because the same server port is used in each instance (<- could be made configurable later if deemed necessary).
 
 on startReceiving(), and on send() partial wakelocks are held and released on stopReceiving() and on send completion/failure respectively.
+
+***Note:* NearConnect should work even outside of a local network, except across NAT firewalls.**
+
+## Getting Started
+Add jitpack.io to your root build.gradle
+```
+allprojects {
+    repositories {
+        ...
+        maven { url "https://jitpack.io" }
+    }
+}
+```
+Then add the dependency in your project build.gradle
+```
+dependencies {
+    ...
+    compile 'com.github.adroitandroid:Near:v1.1'
+    ...
+}
+```
+You can find the latest version [here](https://github.com/adroitandroid/Near/releases/latest/).
+
+## Limitations
+- File transfers aren't easy yet. Services are background, API to take notification to start them in foreground, and listener methods to publish updates are on the TODO list.
+- Current Min SDK is 21. Pulling it down, after testing, is again on the TODO list.
+
+## License
+
+View full license [here](LICENSE). In short:
+
+> The MIT License is a permissive license that is short and to the point. It lets people do anything they want with your code as long as they provide attribution back to you and don’t hold you liable.
