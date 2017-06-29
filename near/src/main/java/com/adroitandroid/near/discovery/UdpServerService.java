@@ -164,7 +164,7 @@ public class UdpServerService extends Service {
 
         private void updateListenersTo(UdpBroadcastListener listener) {
             mListener = listener;
-            synchronized (this) {
+            synchronized (UdpBroadcastListeningHandler.this) {
                 for (StaleHostHandler hostHandler : mHostHandlerMap.values()) {
                     hostHandler.setListener(listener);
                 }
@@ -199,7 +199,7 @@ public class UdpServerService extends Service {
                         StaleHostHandler handler = mHostHandlerMap.get(host);
                         if (handler == null) {
                             handler = new StaleHostHandler(host, mHostHandlerMap, mListener);
-                            synchronized (this) {
+                            synchronized (UdpBroadcastListeningHandler.this) {
                                 mHostHandlerMap.put(host, handler);
                             }
                             if (mListener != null) {

@@ -51,7 +51,7 @@ class NearConnectImpl implements NearConnect {
                 Host candidateHost = null;
                 long jobId = 0;
                 while (sendDataQueue.size() > 0) {
-                    synchronized (this) {
+                    synchronized (NearConnectImpl.this) {
                         if (sendDataQueue.size() > 0) {
                             candidateData = sendDataQueue.remove(0);
                             candidateHost = sendDestQueue.remove(0);
@@ -105,7 +105,7 @@ class NearConnectImpl implements NearConnect {
     @Override
     public long send(byte[] bytes, Host peer) {
         long jobId = System.currentTimeMillis();
-        synchronized (this) {
+        synchronized (NearConnectImpl.this) {
             sendDataQueue.add(bytes);
             sendDestQueue.add(peer);
             sendJobQueue.add(jobId);
