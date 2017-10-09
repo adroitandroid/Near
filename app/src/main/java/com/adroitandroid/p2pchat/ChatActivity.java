@@ -77,6 +77,7 @@ public class ChatActivity extends AppCompatActivity {
         mNearConnect = new NearConnect.Builder()
                 .forPeers(peers)
                 .setContext(this)
+                .setPort(6790)
                 .setListener(getNearConnectListener(), Looper.getMainLooper()).build();
         mNearConnect.startReceiving();
     }
