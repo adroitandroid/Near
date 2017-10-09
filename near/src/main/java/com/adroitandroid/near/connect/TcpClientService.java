@@ -25,6 +25,7 @@ import java.net.Socket;
 public class TcpClientService extends Service {
 
     private PowerManager.WakeLock mWakeLock;
+    private int mPort = TcpServerService.SERVER_PORT;
 
     @Nullable
     @Override
@@ -50,7 +51,7 @@ public class TcpClientService extends Service {
 
         try {
             destAddress = InetAddress.getByName(destination.getHostAddress());
-            socket = new Socket(destAddress, TcpServerService.SERVER_PORT);
+            socket = new Socket(destAddress, mPort);
             DataOutputStream dOut = new DataOutputStream(socket.getOutputStream());
 
             dOut.writeInt(data.length); // write length of the message
@@ -105,6 +106,9 @@ public class TcpClientService extends Service {
         void setListener(Listener listener, Looper looper) {
             mListener = listener;
             mListenerLooper = looper;
+        }
+        void setPort(final int port) {
+            mPort = port;
         }
     }
 

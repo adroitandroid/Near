@@ -23,10 +23,12 @@ import java.net.Socket;
  */
 
 public class TcpServerService extends Service {
+
     static final int SERVER_PORT = 6789;
     private boolean mStarted;
     private PowerManager.WakeLock mWakeLock;
     private ServerSocket mServerSocket;
+    private int mPort = SERVER_PORT;
 
     @Nullable
     @Override
@@ -47,9 +49,17 @@ public class TcpServerService extends Service {
         return START_STICKY;
     }
 
+    private void startServer(final int port, final TcpServerListener listener) {
+
+        mPort = port;
+        startServer(listener);
+
+    }
+
     private void startServer(final TcpServerListener listener) {
         mStarted = true;
         mWakeLock.acquire();
+
         final Looper myLooper = Looper.myLooper();
 
         new HandlerThread("TcpServerThread") {
@@ -63,7 +73,7 @@ public class TcpServerService extends Service {
                             mServerSocket = new ServerSocket();
                             mServerSocket.setReuseAddress(true);
                             mServerSocket.setSoTimeout(0);
-                            mServerSocket.bind(new InetSocketAddress(SERVER_PORT));
+                            mServerSocket.bind(new InetSocketAddress(mPort));
 
                             while (mStarted) {
                                 try {
@@ -165,16 +175,16 @@ public class TcpServerService extends Service {
     }
 
     class TcpServerBinder extends Binder {
+
         private TcpServerListener mListener;
 
         void setListener(TcpServerListener listener) {
             mListener = listener;
         }
 
-        void startServer() {
-            TcpServerService.this.startServer(mListener);
+        void startServer(int port) {
+            TcpServerService.this.startServer(port, mListener);
         }
-
         void stopServer() {
             TcpServerService.this.stopServer();
         }
