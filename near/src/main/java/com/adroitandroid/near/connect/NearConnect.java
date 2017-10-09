@@ -25,10 +25,12 @@ public interface NearConnect {
     boolean isReceiving();
 
     class Builder {
+
         private Context mContext;
         private Listener mListener;
         private Looper mListenerLooper;
         private Set<Host> mPeers;
+        private int mPort = TcpServerService.SERVER_PORT;
 
         public Builder setContext(Context context) {
             mContext = context;
@@ -55,12 +57,18 @@ public interface NearConnect {
             return this;
         }
 
+        public Builder setPort(final int port) {
+            mPort = port;
+            return this;
+        }
+
         public NearConnect build() {
-            return new NearConnectImpl(mContext, mListener, mListenerLooper, mPeers);
+            return new NearConnectImpl(mContext, mListener, mListenerLooper, mPeers, mPort);
         }
     }
 
     interface Listener {
+
         void onReceive(byte[] bytes, Host sender);
 
         void onSendComplete(long jobId);

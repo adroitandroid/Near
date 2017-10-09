@@ -21,6 +21,7 @@ import java.util.Set;
  */
 
 class NearConnectImpl implements NearConnect {
+
     private static final int SERVER_STARTED = 1;
     private static final int SERVER_STOPPED = 2;
     private final Context mContext;
@@ -33,12 +34,14 @@ class NearConnectImpl implements NearConnect {
     private List<Long> sendJobQueue = new ArrayList<>();
     private TcpClientService.Listener mClientServiceListener;
     private TcpServerService.TcpServerListener mServerServiceListener;
+    private int mPort;
 
-    NearConnectImpl(Context context, Listener listener, Looper looper, Set<Host> peers) {
+    NearConnectImpl(Context context, Listener listener, Looper looper, Set<Host> peers, int port) {
         mContext = context;
         mListener = listener;
         mListenerLooper = looper;
         mPeers = peers;
+        mPort = port;
     }
 
     private ServiceConnection mClientConnection = new ServiceConnection() {
@@ -47,6 +50,7 @@ class NearConnectImpl implements NearConnect {
             if (service instanceof TcpClientService.TcpClientBinder) {
                 TcpClientService.TcpClientBinder binder = (TcpClientService.TcpClientBinder) service;
                 binder.setListener(getClientServiceListener(), Looper.myLooper());
+                binder.setPort(mPort);
                 byte[] candidateData = null;
                 Host candidateHost = null;
                 long jobId = 0;
@@ -125,7 +129,7 @@ class NearConnectImpl implements NearConnect {
             if (service instanceof TcpServerService.TcpServerBinder && mServerState == SERVER_STARTED) {
                 TcpServerService.TcpServerBinder binder = (TcpServerService.TcpServerBinder) service;
                 binder.setListener(getServerServiceListener());
-                binder.startServer();
+                binder.startServer(mPort);
             }
         }
 
