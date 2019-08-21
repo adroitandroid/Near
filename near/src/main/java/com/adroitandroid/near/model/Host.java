@@ -4,8 +4,13 @@ package com.adroitandroid.near.model;
  * Created by pv on 20/06/17.
  */
 
+import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
+
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -25,7 +30,7 @@ public class Host implements Parcelable {
         this.name = name;
     }
 
-    protected Host(Parcel in) {
+    protected Host(@NotNull Parcel in) {
         this.name = in.readString();
         this.inetAddress = getInetAddressFrom(in);
     }
@@ -43,18 +48,23 @@ public class Host implements Parcelable {
     }
 
     public static final Creator<Host> CREATOR = new Creator<Host>() {
+        @NotNull
+        @Contract("_ -> new")
         @Override
         public Host createFromParcel(Parcel in) {
             return new Host(in);
         }
 
+        @NotNull
+        @Contract(value = "_ -> new", pure = true)
         @Override
         public Host[] newArray(int size) {
             return new Host[size];
         }
     };
 
-    private InetAddress getInetAddressFrom(Parcel in) {
+    @Nullable
+    private InetAddress getInetAddressFrom(@NotNull Parcel in) {
         byte[] addr = new byte[in.readInt()];
         in.readByteArray(addr);
         try {
@@ -73,6 +83,7 @@ public class Host implements Parcelable {
         return name;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -12,12 +12,14 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.Nullable;
-import android.support.v4.util.ArrayMap;
-import android.support.v4.util.ArraySet;
+import androidx.annotation.Nullable;
+import androidx.collection.ArrayMap;
+import androidx.collection.ArraySet;
 import android.util.Log;
 
 import com.adroitandroid.near.model.Host;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -246,7 +248,7 @@ public class UdpServerService extends Service {
             }
         }
 
-        private boolean hostNameChanged(Host updatedHost, ArrayMap<Host, StaleHostHandler> hostHandlerMap) {
+        private boolean hostNameChanged(Host updatedHost, @NotNull ArrayMap<Host, StaleHostHandler> hostHandlerMap) {
             for (Host host : hostHandlerMap.keySet()) {
                 if (updatedHost.equals(host) && !updatedHost.getName().equals(host.getName())) {
                     hostHandlerMap.put(updatedHost, hostHandlerMap.remove(host));

@@ -1,17 +1,21 @@
 package com.adroitandroid.near.connect;
 
+import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import com.adroitandroid.near.model.Host;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -32,6 +36,7 @@ public class TcpClientService extends Service {
         return new TcpClientBinder();
     }
 
+    @SuppressLint("InvalidWakeLockTag")
     @Override
     public void onCreate() {
         super.onCreate();
@@ -39,8 +44,8 @@ public class TcpClientService extends Service {
         mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TcpClientService");
     }
 
-    private void send(final byte[] data,
-                      final Host destination,
+    private void send(@NotNull final byte[] data,
+                      @NotNull final Host destination,
                       final Listener listener,
                       final Looper listenerLooper,
                       final long jobId) {

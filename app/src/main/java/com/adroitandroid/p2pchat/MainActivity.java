@@ -2,15 +2,15 @@ package com.adroitandroid.p2pchat;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.databinding.DataBindingUtil;
+import androidx.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.os.Looper;
-import android.support.annotation.NonNull;
-import android.support.design.widget.Snackbar;
-import android.support.v4.util.ArraySet;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
+import androidx.annotation.NonNull;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.collection.ArraySet;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import android.view.View;
 import android.widget.Toast;
 
@@ -18,6 +18,8 @@ import com.adroitandroid.near.connect.NearConnect;
 import com.adroitandroid.near.discovery.NearDiscovery;
 import com.adroitandroid.near.model.Host;
 import com.adroitandroid.p2pchat.databinding.ActivityMainBinding;
+
+import org.jetbrains.annotations.Contract;
 
 import java.util.Set;
 
@@ -115,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
         };
     }
 
+    @Contract(value = " -> new", pure = true)
     @NonNull
     private NearConnect.Listener getNearConnectListener() {
         return new NearConnect.Listener() {

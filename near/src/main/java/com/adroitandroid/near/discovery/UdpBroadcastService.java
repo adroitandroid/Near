@@ -3,12 +3,13 @@ package com.adroitandroid.near.discovery;
 
 import android.app.Service;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import java.io.IOException;
 import java.net.DatagramPacket;

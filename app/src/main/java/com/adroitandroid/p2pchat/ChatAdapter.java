@@ -1,10 +1,12 @@
 package com.adroitandroid.p2pchat;
 
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
 import com.adroitandroid.p2pchat.databinding.RowMessagesBinding;
+
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,7 +55,7 @@ class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.MessageVH> {
 
         private final RowMessagesBinding binding;
 
-        MessageVH(RowMessagesBinding binding) {
+        MessageVH(@NotNull RowMessagesBinding binding) {
             super(binding.getRoot());
             this.binding = binding;
         }
