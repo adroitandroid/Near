@@ -3,17 +3,18 @@ package com.adroitandroid.p2pchat;
 import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.Intent;
-import androidx.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.os.Looper;
+import android.view.View;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.collection.ArraySet;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.collection.ArraySet;
+import androidx.databinding.DataBindingUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import android.view.View;
 
 import com.adroitandroid.near.connect.NearConnect;
 import com.adroitandroid.near.model.Host;
@@ -82,6 +83,7 @@ public class ChatActivity extends AppCompatActivity {
                 .setListener(getNearConnectListener(), Looper.getMainLooper()).build();
         mNearConnect.startReceiving();
     }
+
 
     @Contract(value = " -> new", pure = true)
     @NonNull

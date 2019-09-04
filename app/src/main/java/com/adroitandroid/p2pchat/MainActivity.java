@@ -2,22 +2,23 @@ package com.adroitandroid.p2pchat;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import androidx.databinding.DataBindingUtil;
 import android.os.Bundle;
 import android.os.Looper;
-import androidx.annotation.NonNull;
-import com.google.android.material.snackbar.Snackbar;
-import androidx.collection.ArraySet;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.LinearLayoutManager;
 import android.view.View;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.collection.ArraySet;
+import androidx.databinding.DataBindingUtil;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.adroitandroid.near.connect.NearConnect;
 import com.adroitandroid.near.discovery.NearDiscovery;
 import com.adroitandroid.near.model.Host;
 import com.adroitandroid.p2pchat.databinding.ActivityMainBinding;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.jetbrains.annotations.Contract;
 
@@ -85,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
         binding.participantsRv.setAdapter(mParticipantsAdapter);
     }
 
+    @Contract(value = " -> new", pure = true)
     @NonNull
     private NearDiscovery.Listener getNearDiscoveryListener() {
         return new NearDiscovery.Listener() {

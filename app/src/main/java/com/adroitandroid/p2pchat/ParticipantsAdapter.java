@@ -1,14 +1,14 @@
 package com.adroitandroid.p2pchat;
 
-import androidx.recyclerview.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.adroitandroid.near.model.Host;
 import com.adroitandroid.p2pchat.databinding.RowParticipantsBinding;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,7 +46,7 @@ class ParticipantsAdapter extends RecyclerView.Adapter<ParticipantsAdapter.Parti
     }
 
     @Override
-    public void onBindViewHolder(final ParticipantVH holder, int position) {
+    public void onBindViewHolder(@NonNull final ParticipantVH holder, int position) {
         if (TYPE_HEADER == holder.mViewType) {
             holder.mBinding.nameTv.setText("Participants Found:");
         } else {
@@ -75,7 +75,7 @@ class ParticipantsAdapter extends RecyclerView.Adapter<ParticipantsAdapter.Parti
         private final RowParticipantsBinding mBinding;
         private final int mViewType;
 
-        ParticipantVH(int viewType, @NotNull RowParticipantsBinding binding) {
+        ParticipantVH(int viewType, @NonNull RowParticipantsBinding binding) {
             super(binding.getRoot());
             this.mBinding = binding;
             this.mViewType = viewType;

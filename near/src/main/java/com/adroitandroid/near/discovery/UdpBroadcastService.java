@@ -3,12 +3,13 @@ package com.adroitandroid.near.discovery;
 
 import android.app.Service;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.io.IOException;
@@ -80,7 +81,7 @@ public class UdpBroadcastService extends Service {
         }
 
         @Override
-        public void handleMessage(Message msg) {
+        public void handleMessage(@NonNull Message msg) {
             if (msg.what == REPEAT_BROADCAST) {
                 broadcast();
             } else if (msg.what == STOP_BROADCAST) {

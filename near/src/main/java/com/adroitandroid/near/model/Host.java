@@ -4,12 +4,12 @@ package com.adroitandroid.near.model;
  * Created by pv on 20/06/17.
  */
 
-import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.NonNull;
+
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.net.InetAddress;
@@ -30,7 +30,7 @@ public class Host implements Parcelable {
         this.name = name;
     }
 
-    protected Host(@NotNull Parcel in) {
+    protected Host(@NonNull Parcel in) {
         this.name = in.readString();
         this.inetAddress = getInetAddressFrom(in);
     }
@@ -41,21 +41,23 @@ public class Host implements Parcelable {
     }
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeString(name);
         dest.writeInt(inetAddress.getAddress().length);
         dest.writeByteArray(inetAddress.getAddress());
     }
 
     public static final Creator<Host> CREATOR = new Creator<Host>() {
-        @NotNull
+
+        @NonNull
         @Contract("_ -> new")
         @Override
         public Host createFromParcel(Parcel in) {
             return new Host(in);
         }
 
-        @NotNull
+
+        @NonNull
         @Contract(value = "_ -> new", pure = true)
         @Override
         public Host[] newArray(int size) {
@@ -63,8 +65,9 @@ public class Host implements Parcelable {
         }
     };
 
+
     @Nullable
-    private InetAddress getInetAddressFrom(@NotNull Parcel in) {
+    private InetAddress getInetAddressFrom(@NonNull Parcel in) {
         byte[] addr = new byte[in.readInt()];
         in.readByteArray(addr);
         try {
