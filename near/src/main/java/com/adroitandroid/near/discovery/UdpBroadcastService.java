@@ -8,7 +8,9 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.Nullable;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -79,7 +81,7 @@ public class UdpBroadcastService extends Service {
         }
 
         @Override
-        public void handleMessage(Message msg) {
+        public void handleMessage(@NonNull Message msg) {
             if (msg.what == REPEAT_BROADCAST) {
                 broadcast();
             } else if (msg.what == STOP_BROADCAST) {

@@ -19,7 +19,7 @@ NearDiscovery takes hostname and a bunch of settings in a builder pattern for th
 * ```boolean isDiscovering();```
 
 Here's how the NearDiscovery object is created
-```
+```java
 private NearDiscovery mNearDiscovery = new NearDiscovery.Builder()
                 .setContext(this)
                 .setDiscoverableTimeoutMillis(DISCOVERABLE_TIMEOUT_MILLIS)
@@ -30,7 +30,7 @@ private NearDiscovery mNearDiscovery = new NearDiscovery.Builder()
 ```
 The Looper passed as the 2nd param of NearDiscovery.Builder.setDiscoveryListener() is for the thread on which the listener, the 1st param, should be called.
 Sample listener:
-```
+```java
     @NonNull
     private NearDiscovery.Listener getNearDiscoveryListener() {
         return new NearDiscovery.Listener() {
@@ -69,7 +69,7 @@ A NearConnect object provides P2P mechanism with the following self-explanatory 
 
 NearConnect.startReceiving() only tells to start *listening* for any incoming transfers, similarly NearConnect.isReceiving() only tells if the client is listening for transfers or not and *not* if any data is currently being received.
 Here's how the NearConnect object is created:
-```
+```java
         private NearConnect mNearConnect = new NearConnect.Builder()
                 .fromDiscovery(mNearDiscovery)
                 .setContext(this)
@@ -77,14 +77,14 @@ Here's how the NearConnect object is created:
                 .build();
 ```
 The NearDiscovery object passed in NearConnect.Builder.fromDiscovery() is only to get the list of peers from. Peers can be explicitly provided as well:
-```
+```java
         private NearConnect mNearConnect = new NearConnect.Builder()
                 .forPeers(peers) // Set<Host> peers
                 .setContext(this)
                 .setListener(getNearConnectListener(), Looper.getMainLooper()).build();
 ```
 Again, the NearConnect.Builder.setListener() takes the Listener as the 1st argument and the Looper on which to call the Listener as the 2nd argument. Here's what the Listener looks like:
-```
+```java
     @NonNull
     private NearConnect.Listener getNearConnectListener() {
         return new NearConnect.Listener() {
@@ -120,7 +120,7 @@ on startReceiving(), and on send() partial wakelocks are held and released on st
 
 ## Getting Started
 Add jitpack.io to your root build.gradle
-```
+```gradle
 allprojects {
     repositories {
         ...
@@ -129,10 +129,10 @@ allprojects {
 }
 ```
 Then add the dependency in your project build.gradle
-```
+```gradle
 dependencies {
     ...
-    compile 'com.github.adroitandroid:Near:v1.1'
+    implementation 'com.github.adroitandroid:Near:v1.2'
     ...
 }
 ```
@@ -140,7 +140,7 @@ You can find the latest version [here](https://github.com/adroitandroid/Near/rel
 
 ## Limitations
 - File transfers aren't easy yet. Services are background, API to take notification to start them in foreground, and listener methods to publish updates are on the TODO list.
-- Current Min SDK is 21. Pulling it down, after testing, is again on the TODO list.
+- Current Min SDK is 19. Tested with multiple devices and because of code limitation.
 
 ## License
 

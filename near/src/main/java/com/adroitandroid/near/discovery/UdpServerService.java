@@ -12,10 +12,12 @@ import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
-import android.support.annotation.Nullable;
-import android.support.v4.util.ArrayMap;
-import android.support.v4.util.ArraySet;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.collection.ArrayMap;
+import androidx.collection.ArraySet;
 
 import com.adroitandroid.near.model.Host;
 
@@ -172,7 +174,7 @@ public class UdpServerService extends Service {
         }
 
         @Override
-        public void handleMessage(Message msg) {
+        public void handleMessage(@NonNull Message msg) {
             if (msg.what == LISTEN) {
                 //Keep a socket open to listen to all the UDP traffic that is destined for this port
                 try {
@@ -246,7 +248,7 @@ public class UdpServerService extends Service {
             }
         }
 
-        private boolean hostNameChanged(Host updatedHost, ArrayMap<Host, StaleHostHandler> hostHandlerMap) {
+        private boolean hostNameChanged(Host updatedHost, @NonNull ArrayMap<Host, StaleHostHandler> hostHandlerMap) {
             for (Host host : hostHandlerMap.keySet()) {
                 if (updatedHost.equals(host) && !updatedHost.getName().equals(host.getName())) {
                     hostHandlerMap.put(updatedHost, hostHandlerMap.remove(host));
@@ -289,7 +291,7 @@ public class UdpServerService extends Service {
         }
 
         @Override
-        public void handleMessage(Message msg) {
+        public void handleMessage(@NonNull Message msg) {
             if (msg.what == STALE_HOST) {
                 mMap.remove(mHost);
                 if (mListener != null) {

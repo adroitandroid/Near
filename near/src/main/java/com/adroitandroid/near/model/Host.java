@@ -7,6 +7,11 @@ package com.adroitandroid.near.model;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import org.jetbrains.annotations.Contract;
+
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -25,7 +30,7 @@ public class Host implements Parcelable {
         this.name = name;
     }
 
-    protected Host(Parcel in) {
+    protected Host(@NonNull Parcel in) {
         this.name = in.readString();
         this.inetAddress = getInetAddressFrom(in);
     }
@@ -36,25 +41,33 @@ public class Host implements Parcelable {
     }
 
     @Override
-    public void writeToParcel(Parcel dest, int flags) {
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
         dest.writeString(name);
         dest.writeInt(inetAddress.getAddress().length);
         dest.writeByteArray(inetAddress.getAddress());
     }
 
     public static final Creator<Host> CREATOR = new Creator<Host>() {
+
+        @NonNull
+        @Contract("_ -> new")
         @Override
         public Host createFromParcel(Parcel in) {
             return new Host(in);
         }
 
+
+        @NonNull
+        @Contract(value = "_ -> new", pure = true)
         @Override
         public Host[] newArray(int size) {
             return new Host[size];
         }
     };
 
-    private InetAddress getInetAddressFrom(Parcel in) {
+
+    @Nullable
+    private InetAddress getInetAddressFrom(@NonNull Parcel in) {
         byte[] addr = new byte[in.readInt()];
         in.readByteArray(addr);
         try {
@@ -73,6 +86,7 @@ public class Host implements Parcelable {
         return name;
     }
 
+    @Contract(value = "null -> false", pure = true)
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

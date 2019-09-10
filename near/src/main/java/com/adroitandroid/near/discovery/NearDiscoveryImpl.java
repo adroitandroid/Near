@@ -7,7 +7,8 @@ import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.support.v4.util.ArraySet;
+
+import androidx.collection.ArraySet;
 
 import com.adroitandroid.near.model.Host;
 

@@ -7,7 +7,8 @@ import android.content.ServiceConnection;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.support.annotation.NonNull;
+
+import androidx.annotation.NonNull;
 
 import com.adroitandroid.near.model.Host;
 
