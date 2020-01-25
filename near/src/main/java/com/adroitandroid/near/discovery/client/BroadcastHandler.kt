@@ -6,9 +6,9 @@ import android.os.Message
 import java.io.IOException
 import java.net.*
 
-class BroadcastHandler internal constructor(looper: Looper?,
+class BroadcastHandler internal constructor(looper: Looper,
                                             private val mHostName: String,
-                                            private val mBroadcastInterval: Long): Handler(looper ?: Looper.getMainLooper()) {
+                                            private val mBroadcastInterval: Long): Handler(looper) {
     private var mSocket: DatagramSocket? = null
 
     override fun handleMessage(msg: Message) {
