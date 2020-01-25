@@ -40,7 +40,7 @@ class BroadcastHandler internal constructor(looper: Looper,
                     for (interfaceAddress in networkInterface.interfaceAddresses) {
                         val broadcast = interfaceAddress.broadcast ?: continue
                         try {
-                            val sendPacket = DatagramPacket(sendData, sendData.size, broadcast, 8888)
+                            val sendPacket = DatagramPacket(sendData, sendData.size, broadcast, port)
                             mSocket!!.send(sendPacket)
                         } catch (ignored: Exception) {
                         }

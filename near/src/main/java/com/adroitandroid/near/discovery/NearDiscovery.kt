@@ -48,8 +48,9 @@ interface NearDiscovery {
             return this
         }
 
-        fun setPort(port: Int) {
+        fun setPort(port: Int): Builder {
             mPort = port
+            return this
         }
 
         fun build(): NearDiscovery {
