@@ -3,27 +3,7 @@ package com.adroitandroid.near.discovery.client;
 
 import android.app.Service;
 import android.content.Intent;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Looper;
-import android.os.Message;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.InterfaceAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
-import java.util.Enumeration;
-
-/**
- * Created by pv on 20/06/17.
- */
 
 public class UdpBroadcastService extends Service {
 
@@ -54,7 +34,6 @@ public class UdpBroadcastService extends Service {
         return START_STICKY;
     }
 
-    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return null;

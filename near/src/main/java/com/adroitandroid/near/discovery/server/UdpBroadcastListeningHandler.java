@@ -5,7 +5,6 @@ import android.os.HandlerThread;
 import android.os.Looper;
 import android.os.Message;
 
-import androidx.annotation.NonNull;
 import androidx.collection.ArrayMap;
 
 import com.adroitandroid.near.model.Host;
@@ -66,9 +65,8 @@ public class UdpBroadcastListeningHandler extends Handler {
     }
 
     @Override
-    public void handleMessage(@NonNull Message msg) {
+    public void handleMessage(Message msg) {
         if (msg.what == LISTEN) {
-            //Keep a socket open to listen to all the UDP traffic that is destined for this port
             try {
                 if (mSocket == null) {
                     mSocket = new DatagramSocket(null);
@@ -76,19 +74,16 @@ public class UdpBroadcastListeningHandler extends Handler {
                             = new InetSocketAddress(InetAddress.getByName("0.0.0.0"), 8888);
                     mSocket.setReuseAddress(true);
                     mSocket.setBroadcast(true);
-                    mSocket.setSoTimeout(0); // infinitely wait for data
+                    mSocket.setSoTimeout(0);
                     mSocket.bind(socketAddress);
                 }
 
-                //Receive a packet
                 byte[] recvBuf = new byte[15000];
                 DatagramPacket packet = new DatagramPacket(recvBuf, recvBuf.length);
                 DatagramSocket socket = mSocket;
                 socket.receive(packet);
 
-                //Packet received
                 Host host = new Host(packet.getAddress(), new String(packet.getData()).trim());
-
                 if (isHostClientToo || !mCurrentIps.contains(host.getHostAddress())) {
                     StaleHostHandler handler = mHostHandlerMap.get(host);
                     if (handler == null) {
@@ -140,7 +135,7 @@ public class UdpBroadcastListeningHandler extends Handler {
         }
     }
 
-    private boolean hostNameChanged(Host updatedHost, @NonNull ArrayMap<Host, StaleHostHandler> hostHandlerMap) {
+    private boolean hostNameChanged(Host updatedHost, ArrayMap<Host, StaleHostHandler> hostHandlerMap) {
         for (Host host : hostHandlerMap.keySet()) {
             if (updatedHost.equals(host) && !updatedHost.getName().equals(host.getName())) {
                 hostHandlerMap.put(updatedHost, hostHandlerMap.remove(host));

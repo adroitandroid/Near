@@ -26,13 +26,10 @@ public class BroadcastHandler extends Handler {
         super(looper);
         mHostName = hostName;
         mBroadcastInterval = broadcastInterval;
-        //Open a random port to send the package
         try {
             mSocket = new DatagramSocket();
             mSocket.setBroadcast(true);
-        } catch (SocketException e) {
-//                TODO: handle
-        }
+        } catch (SocketException ignored) { }
     }
 
     @Override
@@ -47,26 +44,20 @@ public class BroadcastHandler extends Handler {
 
     void broadcast() {
         if (mSocket != null) {
-            // Find the server using UDP broadcast
             try {
                 byte[] sendData = mHostName.getBytes();
-
-                //Try the 255.255.255.255 first
                 try {
                     DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length,
                             InetAddress.getByName("255.255.255.255"), 8888);
                     mSocket.send(sendPacket);
-                } catch (Exception e) {
-//                    TODO: handle
-                }
+                } catch (Exception ignored) { }
 
-                // Broadcast the message over all the network interfaces
                 Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
                 while (interfaces.hasMoreElements()) {
                     NetworkInterface networkInterface = interfaces.nextElement();
 
                     if (networkInterface.isLoopback() || !networkInterface.isUp()) {
-                        continue; // Don't want to broadcast to the loopback interface
+                        continue;
                     }
 
                     for (InterfaceAddress interfaceAddress : networkInterface.getInterfaceAddresses()) {
@@ -75,19 +66,14 @@ public class BroadcastHandler extends Handler {
                             continue;
                         }
 
-                        // Send the broadcast package!
                         try {
                             DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, broadcast, 8888);
                             mSocket.send(sendPacket);
-                        } catch (Exception e) {
-//                            TODO: handle
-                        }
+                        } catch (Exception ignored) { }
                     }
                 }
                 sendEmptyMessageDelayed(REPEAT_BROADCAST, mBroadcastInterval);
-            } catch (IOException ex) {
-//                TODO: handle
-            }
+            } catch (IOException ignored) { }
         }
     }
 }
