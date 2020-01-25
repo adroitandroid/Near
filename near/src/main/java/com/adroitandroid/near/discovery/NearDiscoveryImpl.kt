@@ -28,8 +28,8 @@ internal class NearDiscoveryImpl(private val mDiscoverableTimeout: Long,
     override var isDiscovering: Boolean = false
         private set
 
-    private var mDiscoverableDisposable: Disposable? = null
-    private var mDiscoveryDisposable: Disposable? = null
+    private lateinit var mDiscoverableDisposable: Disposable
+    private lateinit var mDiscoveryDisposable: Disposable
     private val mCurrentPeers: MutableSet<Host> = mutableSetOf()
 
     override fun makeDiscoverable(hostName: String) {
@@ -48,7 +48,7 @@ internal class NearDiscoveryImpl(private val mDiscoverableTimeout: Long,
     override fun makeNonDiscoverable() {
         if (isDiscoverable) {
             stopBeingDiscoverable()
-            mDiscoverableDisposable!!.dispose()
+            mDiscoverableDisposable.dispose()
         }
     }
 
@@ -93,7 +93,7 @@ internal class NearDiscoveryImpl(private val mDiscoverableTimeout: Long,
             intent.putExtra(UdpServerService.BUNDLE_COMMAND, UdpServerService.COMMAND_STOP_SERVER)
             mContext.startService(intent)
             isDiscovering = false
-            mDiscoveryDisposable!!.dispose()
+            mDiscoveryDisposable.dispose()
         }
     }
 
