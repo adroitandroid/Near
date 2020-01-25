@@ -16,6 +16,7 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
     private lateinit var mCurrentIps: Set<String>
     private var isHostClientToo = false
     private var mStaleTimeout: Long = 0
+    private var mPort: Int = 8888
 
 
     private fun updateListenersTo(listener: UdpBroadcastListener) {
@@ -32,7 +33,7 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
             try {
                 if (mSocket == null) {
                     mSocket = DatagramSocket(null)
-                    val socketAddress = InetSocketAddress(InetAddress.getByName("0.0.0.0"), 8888)
+                    val socketAddress = InetSocketAddress(InetAddress.getByName("0.0.0.0"), mPort)
                     mSocket!!.apply {
                         this.reuseAddress = true
                         this.broadcast = true
@@ -45,7 +46,7 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
                 socket.receive(packet)
                 val host = Host(packet.address, String(packet.data).trim { it <= ' ' })
 
-                if (isHostClientToo || !mCurrentIps!!.contains(host.hostAddress)) {
+                if (isHostClientToo || !mCurrentIps.contains(host.hostAddress)) {
                     var handler = mHostHandlerMap[host]
                     if (handler == null) {
                         handler = StaleHostHandler(host, mHostHandlerMap, mListener)
@@ -105,9 +106,12 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
     companion object {
         private const val LISTEN = 5678
         private var handler: UdpBroadcastListeningHandler? = null
+
         fun startBroadcastListening(hostHandlerMap: ArrayMap<Host, StaleHostHandler>,
                                     currentHostIps: Set<String>,
-                                    isHostClientToo: Boolean, staleTimeout: Long) {
+                                    isHostClientToo: Boolean,
+                                    staleTimeout: Long,
+                                    port: Int) {
             val handlerThread: HandlerThread = object : HandlerThread("ServerService") {
                 override fun onLooperPrepared() {
                     handler = UdpBroadcastListeningHandler(looper)
@@ -116,6 +120,7 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
                         this.mCurrentIps = currentHostIps
                         this.isHostClientToo = isHostClientToo
                         this.mStaleTimeout = staleTimeout
+                        this.mPort = port
                     }.sendEmptyMessage(LISTEN)
                 }
             }

@@ -20,6 +20,8 @@ interface NearDiscovery {
         private lateinit var mListener: Listener
         private lateinit var mLooper: Looper
         private lateinit var mContext: Context
+        private var mPort: Int = 8888
+
         fun setDiscoverableTimeoutMillis(discoverableTimeout: Long): Builder {
             mDiscoverableTimeout = discoverableTimeout
             return this
@@ -46,9 +48,13 @@ interface NearDiscovery {
             return this
         }
 
+        fun setPort(port: Int) {
+            mPort = port
+        }
+
         fun build(): NearDiscovery {
             return NearDiscoveryImpl(mDiscoverableTimeout, mDiscoveryTimeout,
-                    mDiscoverablePingInterval, mListener, mLooper, mContext)
+                    mDiscoverablePingInterval, mListener, mLooper, mContext, mPort)
         }
     }
 

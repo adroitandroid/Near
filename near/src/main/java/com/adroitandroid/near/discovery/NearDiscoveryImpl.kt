@@ -21,7 +21,8 @@ internal class NearDiscoveryImpl(private val mDiscoverableTimeout: Long,
                                  private val mPingInterval: Long,
                                  private val mListener: NearDiscovery.Listener,
                                  private val mListenerLooper: Looper,
-                                 private val mContext: Context) : NearDiscovery {
+                                 private val mContext: Context,
+                                 private val mPort: Int) : NearDiscovery {
     override var isDiscoverable: Boolean = false
         private set
     override var isDiscovering: Boolean = false
@@ -56,6 +57,7 @@ internal class NearDiscoveryImpl(private val mDiscoverableTimeout: Long,
         intent.putExtra(UdpBroadcastService.BUNDLE_NAME, hostName)
         intent.putExtra(UdpBroadcastService.BUNDLE_ACTION, UdpBroadcastService.ACTION_START_BROADCAST)
         intent.putExtra(UdpBroadcastService.BUNDLE_INTERVAL, mPingInterval)
+        intent.putExtra(UdpBroadcastService.BUNDLE_DISCOVERY_PORT, mPort)
         mContext.startService(intent)
         isDiscoverable = true
     }
@@ -72,6 +74,7 @@ internal class NearDiscoveryImpl(private val mDiscoverableTimeout: Long,
             val intent = Intent(mContext.applicationContext, UdpServerService::class.java)
             intent.putExtra(UdpServerService.BUNDLE_COMMAND, UdpServerService.COMMAND_START_SERVER)
             intent.putExtra(UdpServerService.BUNDLE_STALE_TIMEOUT, mPingInterval * 2)
+            intent.putExtra(UdpServerService.BUNDLE_DISCOVERY_PORT, mPort)
             mContext.startService(intent)
             isDiscovering = true
             mContext.bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE)

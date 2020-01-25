@@ -8,7 +8,8 @@ import java.net.*
 
 class BroadcastHandler internal constructor(looper: Looper,
                                             private val mHostName: String,
-                                            private val mBroadcastInterval: Long): Handler(looper) {
+                                            private val mBroadcastInterval: Long,
+                                            private val port: Int): Handler(looper) {
     private var mSocket: DatagramSocket? = null
 
     override fun handleMessage(msg: Message) {
@@ -26,7 +27,7 @@ class BroadcastHandler internal constructor(looper: Looper,
                 val sendData = mHostName.toByteArray()
                 try {
                     val sendPacket = DatagramPacket(sendData, sendData.size,
-                            InetAddress.getByName("255.255.255.255"), 8888)
+                            InetAddress.getByName("255.255.255.255"), port)
                     mSocket!!.send(sendPacket)
                 } catch (ignored: Exception) {
                 }

@@ -11,7 +11,8 @@ class UdpBroadcastService : Service() {
         if (ACTION_START_BROADCAST == intent.getStringExtra(BUNDLE_ACTION)) {
             broadcastThread?.stopBroadcast()
             broadcastThread = BroadcastThread(intent.getStringExtra(BUNDLE_NAME) ?: Host.DUMMY,
-                    intent.getLongExtra(BUNDLE_INTERVAL, DEFAULT_BROADCAST_INTERVAL))
+                    intent.getLongExtra(BUNDLE_INTERVAL, DEFAULT_BROADCAST_INTERVAL),
+                    intent.getIntExtra(BUNDLE_DISCOVERY_PORT, 8888))
             broadcastThread!!.start()
         } else if (ACTION_STOP_BROADCAST == intent.getStringExtra(BUNDLE_ACTION)) {
             broadcastThread?.stopBroadcast()
@@ -27,6 +28,7 @@ class UdpBroadcastService : Service() {
         const val BUNDLE_NAME = "bundle_name"
         const val BUNDLE_ACTION = "bundle_action"
         const val BUNDLE_INTERVAL = "bundle_interval"
+        const val BUNDLE_DISCOVERY_PORT = "bundle_discovery_port"
         const val ACTION_START_BROADCAST = "start_broadcast"
         const val ACTION_STOP_BROADCAST = "stop_broadcast"
         private const val DEFAULT_BROADCAST_INTERVAL: Long = 5000
