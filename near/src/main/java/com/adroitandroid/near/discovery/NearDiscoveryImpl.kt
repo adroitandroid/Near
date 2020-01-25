@@ -7,13 +7,12 @@ import android.content.ServiceConnection
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import androidx.collection.ArraySet
-import com.adroitandroid.near.discovery.UdpServerService.UdpBroadcastListener
-import com.adroitandroid.near.discovery.UdpServerService.UdpServerBinder
+import com.adroitandroid.near.discovery.client.UdpBroadcastService
+import com.adroitandroid.near.discovery.server.UdpBroadcastListener
+import com.adroitandroid.near.discovery.server.UdpServerService
 import com.adroitandroid.near.model.Host
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
-import io.reactivex.functions.Consumer
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 
@@ -99,7 +98,7 @@ internal class NearDiscoveryImpl(private val mDiscoverableTimeout: Long,
 
     private val mServerConnection: ServiceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
-            val binder = service as UdpServerBinder
+            val binder = service as UdpServerService.UdpServerBinder
             binder.setBroadcastListener(object : UdpBroadcastListener {
                 override fun onServerSetupFailed(e: Throwable) {
                     Handler(mListenerLooper).post { mListener.onDiscoveryFailure(e) }

@@ -10,9 +10,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true">
 
-        <service android:name="com.adroitandroid.near.discovery.UdpBroadcastService" />
+        <service android:name="com.adroitandroid.near.discovery.client.UdpBroadcastService" />
 
-        <service android:name="com.adroitandroid.near.discovery.UdpServerService" />
+        <service android:name="com.adroitandroid.near.discovery.server.UdpServerService" />
 
         <service android:name="com.adroitandroid.near.connect.TcpServerService" />
 
