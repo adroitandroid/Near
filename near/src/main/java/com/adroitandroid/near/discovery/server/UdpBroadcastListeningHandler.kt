@@ -13,7 +13,7 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
     private var mSocket: DatagramSocket? = null
     private var mListener: UdpBroadcastListener? = null
     private lateinit var mHostHandlerMap: ArrayMap<Host, StaleHostHandler>
-    private var mCurrentIps: Set<String>? = null
+    private lateinit var mCurrentIps: Set<String>
     private var isHostClientToo = false
     private var mStaleTimeout: Long = 0
 
@@ -33,10 +33,11 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
                 if (mSocket == null) {
                     mSocket = DatagramSocket(null)
                     val socketAddress = InetSocketAddress(InetAddress.getByName("0.0.0.0"), 8888)
-                    mSocket!!.reuseAddress = true
-                    mSocket!!.broadcast = true
-                    mSocket!!.soTimeout = 0
-                    mSocket!!.bind(socketAddress)
+                    mSocket!!.apply {
+                        this.reuseAddress = true
+                        this.broadcast = true
+                        this.soTimeout = 0
+                    }.bind(socketAddress)
                 }
                 val recvBuf = ByteArray(15000)
                 val packet = DatagramPacket(recvBuf, recvBuf.size)
@@ -45,33 +46,29 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
                 val host = Host(packet.address, String(packet.data).trim { it <= ' ' })
 
                 if (isHostClientToo || !mCurrentIps!!.contains(host.hostAddress)) {
-                    var handler = mHostHandlerMap!![host]
+                    var handler = mHostHandlerMap[host]
                     if (handler == null) {
                         handler = StaleHostHandler(host, mHostHandlerMap, mListener)
-                        synchronized(this@UdpBroadcastListeningHandler) { mHostHandlerMap!!.put(host, handler) }
-                        if (mListener != null) {
-                            Handler(Looper.getMainLooper()).post { mListener!!.onHostsUpdate(mHostHandlerMap!!.keys) }
-                        }
+                        synchronized(this@UdpBroadcastListeningHandler) { mHostHandlerMap.put(host, handler) }
+                        Handler(Looper.getMainLooper()).post { mListener?.onHostsUpdate(mHostHandlerMap.keys) }
                     } else if (hostNameChanged(host, mHostHandlerMap)) {
-                        if (mListener != null) {
-                            Handler(Looper.getMainLooper()).post { mListener!!.onHostsUpdate(mHostHandlerMap!!.keys) }
-                        }
+                        Handler(Looper.getMainLooper()).post { mListener?.onHostsUpdate(mHostHandlerMap.keys) }
                     }
                     handler.removeMessages(StaleHostHandler.STALE_HOST)
                     handler.sendEmptyMessageDelayed(StaleHostHandler.STALE_HOST, mStaleTimeout)
                 }
             } catch (e: SocketException) {
+
                 e.printStackTrace()
-                if (mSocket != null) {
-                    mSocket!!.close()
-                    mSocket = null
-                }
+                mSocket?.close()
+                mSocket = null
+
             } catch (e: UnknownHostException) {
+
                 e.printStackTrace()
-                if (mSocket != null) {
-                    mSocket!!.close()
-                    mSocket = null
-                }
+                mSocket?.close()
+                mSocket = null
+
             } catch (e: IOException) {
                 e.printStackTrace()
                 if (mListener != null) {
@@ -86,7 +83,7 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
 
     private fun hostNameChanged(updatedHost: Host, hostHandlerMap: ArrayMap<Host, StaleHostHandler>): Boolean {
         for (host: Host in hostHandlerMap.keys) {
-            if (updatedHost.equals(host) && updatedHost.name != host.name) {
+            if (updatedHost == host && updatedHost.name != host.name) {
                 hostHandlerMap[updatedHost] = hostHandlerMap.remove(host)
                 return true
             }
@@ -99,7 +96,7 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
             handler!!.removeMessages(StaleHostHandler.STALE_HOST)
         }
         mListener = null
-        mSocket!!.close()
+        mSocket?.close()
         mSocket = null
         removeMessages(LISTEN)
         looper.quitSafely()
@@ -109,32 +106,29 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
         private const val LISTEN = 5678
         private var handler: UdpBroadcastListeningHandler? = null
         fun startBroadcastListening(hostHandlerMap: ArrayMap<Host, StaleHostHandler>,
-                                    currentHostIps: Set<String>?,
+                                    currentHostIps: Set<String>,
                                     isHostClientToo: Boolean, staleTimeout: Long) {
             val handlerThread: HandlerThread = object : HandlerThread("ServerService") {
                 override fun onLooperPrepared() {
                     handler = UdpBroadcastListeningHandler(looper)
-                    handler!!.mHostHandlerMap = hostHandlerMap
-                    handler!!.mCurrentIps = currentHostIps
-                    handler!!.isHostClientToo = isHostClientToo
-                    handler!!.mStaleTimeout = staleTimeout
-                    handler!!.sendEmptyMessage(LISTEN)
+                    handler!!.apply {
+                        this.mHostHandlerMap = hostHandlerMap
+                        this.mCurrentIps = currentHostIps
+                        this.isHostClientToo = isHostClientToo
+                        this.mStaleTimeout = staleTimeout
+                    }.sendEmptyMessage(LISTEN)
                 }
             }
             handlerThread.start()
         }
 
         fun setListener(listener: UdpBroadcastListener) {
-            if (handler != null) {
-                handler!!.updateListenersTo(listener)
-            }
+            handler?.updateListenersTo(listener)
         }
 
         fun stopListeningForBroadcasts() {
-            if (handler != null) {
-                handler!!.stop()
-                handler = null
-            }
+            handler?.stop()
+            handler = null
         }
     }
 }
