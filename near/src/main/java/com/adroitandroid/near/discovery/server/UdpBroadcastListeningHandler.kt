@@ -7,6 +7,7 @@ import android.os.Message
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.collection.ArrayMap
 import com.adroitandroid.near.model.Host
+import org.json.JSONException
 import org.json.JSONObject
 import java.io.IOException
 import java.net.*
@@ -48,21 +49,23 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
                 val socket = mSocket!!
                 socket.receive(packet)
 
-                val jsonObject = JSONObject(String(packet.data).trim { it <= ' ' })
-                val host = Host(packet.address, jsonObject.getString(Host.JSON_NAME), jsonObject.getString(Host.JSON_FILTER_TEXT))
+                try {
+                    val jsonObject = JSONObject(String(packet.data).trim { it <= ' ' })
+                    val host = Host(packet.address, jsonObject.getString(Host.JSON_NAME), jsonObject.getString(Host.JSON_FILTER_TEXT))
 
-                if ((isHostClientToo || !mCurrentIps.contains(host.hostAddress)) && hostMatchesFilter(host.filterText.trim { it <= ' ' })) {
-                    var handler = mHostHandlerMap[host]
-                    if (handler == null) {
-                        handler = StaleHostHandler(host, mHostHandlerMap, mListener)
-                        synchronized(this@UdpBroadcastListeningHandler) { mHostHandlerMap.put(host, handler) }
-                        Handler(Looper.getMainLooper()).post { mListener?.onHostsUpdate(mHostHandlerMap.keys) }
-                    } else if (hostNameChanged(host, mHostHandlerMap)) {
-                        Handler(Looper.getMainLooper()).post { mListener?.onHostsUpdate(mHostHandlerMap.keys) }
+                    if ((isHostClientToo || !mCurrentIps.contains(host.hostAddress)) && hostMatchesFilter(host.filterText.trim { it <= ' ' })) {
+                        var handler = mHostHandlerMap[host]
+                        if (handler == null) {
+                            handler = StaleHostHandler(host, mHostHandlerMap, mListener)
+                            synchronized(this@UdpBroadcastListeningHandler) { mHostHandlerMap.put(host, handler) }
+                            Handler(Looper.getMainLooper()).post { mListener?.onHostsUpdate(mHostHandlerMap.keys) }
+                        } else if (hostNameChanged(host, mHostHandlerMap)) {
+                            Handler(Looper.getMainLooper()).post { mListener?.onHostsUpdate(mHostHandlerMap.keys) }
+                        }
+                        handler.removeMessages(StaleHostHandler.STALE_HOST)
+                        handler.sendEmptyMessageDelayed(StaleHostHandler.STALE_HOST, mStaleTimeout)
                     }
-                    handler.removeMessages(StaleHostHandler.STALE_HOST)
-                    handler.sendEmptyMessageDelayed(StaleHostHandler.STALE_HOST, mStaleTimeout)
-                }
+                } catch (ignored: JSONException) { }
             } catch (e: SocketException) {
 
                 e.printStackTrace()
