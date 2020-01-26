@@ -17,7 +17,8 @@ import java.net.InetAddress
 class NearConnectImpl(private val mContext: Context,
                       private val mListener: NearConnect.Listener,
                       private val mLooper: Looper,
-                      private val mPeers: Set<Host>) : NearConnect {
+                      private val mPeers: Set<Host>,
+                      private val mPort: Int) : NearConnect {
 
     private var serverState = false
     private var sendDataQueue: MutableList<ByteArray> = mutableListOf()
@@ -30,6 +31,8 @@ class NearConnectImpl(private val mContext: Context,
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if (service is TcpClientService.TcpClientBinder) {
                 service.setListener(getClientServiceListener(), Looper.myLooper() ?: Looper.getMainLooper())
+                service.setPort(mPort)
+
                 var candidateData: ByteArray? = null
                 var candidateHost: Host? = null
                 var jobId: Long = 0
@@ -83,6 +86,7 @@ class NearConnectImpl(private val mContext: Context,
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             if(service is TcpServerService.TcpServerBinder && serverState) {
                 service.setListener(getServerServiceListener())
+                service.setPort(mPort)
                 service.startServer()
             }
         }

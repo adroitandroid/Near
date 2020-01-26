@@ -26,7 +26,7 @@ class UdpServerService : Service() {
         if (COMMAND_START_SERVER == intent.getStringExtra(BUNDLE_COMMAND)) {
             mStaleTimeout = intent.getLongExtra(BUNDLE_STALE_TIMEOUT, 10000)
             startBroadcastListening(intent.getBooleanExtra(BUNDLE_IS_HOST_CLIENT, false),
-                    intent.getIntExtra(BUNDLE_DISCOVERY_PORT, 8888))
+                    intent.getIntExtra(BUNDLE_DISCOVERY_PORT, DISCOVERY_PORT))
         } else if (COMMAND_STOP_SERVER == intent.getStringExtra(BUNDLE_COMMAND)) {
             UdpBroadcastListeningHandler.stopListeningForBroadcasts()
             stopSelf()
@@ -105,5 +105,6 @@ class UdpServerService : Service() {
         private const val BUNDLE_IS_HOST_CLIENT = "bundle_host_is_client_too"
         const val COMMAND_START_SERVER = "start_server"
         const val COMMAND_STOP_SERVER = "stop_server"
+        const val DISCOVERY_PORT = 8888
     }
 }

@@ -16,7 +16,7 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
     private lateinit var mCurrentIps: Set<String>
     private var isHostClientToo = false
     private var mStaleTimeout: Long = 0
-    private var mPort: Int = 8888
+    private var mPort: Int = UdpServerService.DISCOVERY_PORT
 
 
     private fun updateListenersTo(listener: UdpBroadcastListener) {

@@ -34,7 +34,7 @@ class TcpServerService : Service() {
         return START_STICKY
     }
 
-    private fun startServer(listener: TcpServerListener) {
+    private fun startServer(port: Int, listener: TcpServerListener) {
         mStarted = true
         mWakeLock.acquire(30 * 60 * 1000L)
         val myLooper = Looper.myLooper() ?: Looper.getMainLooper()
@@ -47,7 +47,7 @@ class TcpServerService : Service() {
                         mServerSocket = ServerSocket()
                         mServerSocket!!.reuseAddress = true
                         mServerSocket!!.soTimeout = 0
-                        mServerSocket!!.bind(InetSocketAddress(SERVER_PORT))
+                        mServerSocket!!.bind(InetSocketAddress(port))
                         while (mStarted) {
                             try {
                                 val connectionSocket = mServerSocket!!.accept()
@@ -123,13 +123,18 @@ class TcpServerService : Service() {
 
     inner class TcpServerBinder : Binder() {
         private var mListener: TcpServerListener? = null
+        private var mPort: Int = SERVER_PORT
 
         fun setListener(listener: TcpServerListener) {
             mListener = listener
         }
 
+        fun setPort(port: Int) {
+            mPort = port
+        }
+
         fun startServer() {
-            this@TcpServerService.startServer(mListener!!)
+            this@TcpServerService.startServer(mPort, mListener!!)
         }
 
         fun stopServer() {

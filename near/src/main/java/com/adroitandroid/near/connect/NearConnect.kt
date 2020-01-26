@@ -2,6 +2,7 @@ package com.adroitandroid.near.connect
 
 import android.content.Context
 import android.os.Looper
+import com.adroitandroid.near.connect.server.TcpServerService
 import com.adroitandroid.near.discovery.NearDiscovery
 import com.adroitandroid.near.model.Host
 
@@ -17,6 +18,8 @@ interface NearConnect {
         private lateinit var mListener: Listener
         private lateinit var mListenerLooper: Looper
         private lateinit var mPeers: Set<Host>
+        private var mPort: Int = TcpServerService.SERVER_PORT
+
         fun setContext(context: Context): Builder {
             mContext = context
             return this
@@ -38,8 +41,13 @@ interface NearConnect {
             return this
         }
 
+        fun setPort(port: Int): Builder {
+            mPort = port
+            return this
+        }
+
         fun build(): NearConnect {
-            return NearConnectImpl(mContext, mListener, mListenerLooper, mPeers)
+            return NearConnectImpl(mContext, mListener, mListenerLooper, mPeers, mPort)
         }
     }
 

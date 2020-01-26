@@ -3,6 +3,7 @@ package com.adroitandroid.near.discovery.client
 import android.app.Service
 import android.content.Intent
 import android.os.IBinder
+import com.adroitandroid.near.discovery.server.UdpServerService
 import com.adroitandroid.near.model.Host
 
 class UdpBroadcastService : Service() {
@@ -12,7 +13,7 @@ class UdpBroadcastService : Service() {
             broadcastThread?.stopBroadcast()
             broadcastThread = BroadcastThread(intent.getStringExtra(BUNDLE_NAME) ?: Host.DUMMY,
                     intent.getLongExtra(BUNDLE_INTERVAL, DEFAULT_BROADCAST_INTERVAL),
-                    intent.getIntExtra(BUNDLE_DISCOVERY_PORT, 8888))
+                    intent.getIntExtra(BUNDLE_DISCOVERY_PORT, UdpServerService.DISCOVERY_PORT))
             broadcastThread!!.start()
         } else if (ACTION_STOP_BROADCAST == intent.getStringExtra(BUNDLE_ACTION)) {
             broadcastThread?.stopBroadcast()

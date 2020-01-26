@@ -2,6 +2,7 @@ package com.adroitandroid.near.discovery
 
 import android.content.Context
 import android.os.Looper
+import com.adroitandroid.near.discovery.server.UdpServerService
 import com.adroitandroid.near.model.Host
 
 interface NearDiscovery {
@@ -20,7 +21,7 @@ interface NearDiscovery {
         private lateinit var mListener: Listener
         private lateinit var mLooper: Looper
         private lateinit var mContext: Context
-        private var mPort: Int = 8888
+        private var mPort: Int = UdpServerService.DISCOVERY_PORT
 
         fun setDiscoverableTimeoutMillis(discoverableTimeout: Long): Builder {
             mDiscoverableTimeout = discoverableTimeout
