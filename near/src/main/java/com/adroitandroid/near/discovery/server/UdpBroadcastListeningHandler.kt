@@ -19,6 +19,7 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
     private var isHostClientToo = false
     private var mStaleTimeout: Long = 0
     private var mPort: Int = UdpServerService.DISCOVERY_PORT
+    private var mRegex: Regex = Regex("^$")
 
 
     private fun updateListenersTo(listener: UdpBroadcastListener) {
@@ -97,8 +98,7 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
     }
 
     private fun hostMatchesFilter(filterText: String): Boolean {
-        val regex = Regex("^$")
-        return filterText.matches(regex)
+        return filterText.matches(mRegex)
     }
 
     private fun stop() {
@@ -120,7 +120,8 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
                                     currentHostIps: Set<String>,
                                     isHostClientToo: Boolean,
                                     staleTimeout: Long,
-                                    port: Int) {
+                                    port: Int,
+                                    regex: Regex) {
             val handlerThread: HandlerThread = object : HandlerThread("ServerService") {
                 override fun onLooperPrepared() {
                     handler = UdpBroadcastListeningHandler(looper)
@@ -130,6 +131,7 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
                         this.isHostClientToo = isHostClientToo
                         this.mStaleTimeout = staleTimeout
                         this.mPort = port
+                        this.mRegex = regex
                     }.sendEmptyMessage(LISTEN)
                 }
             }

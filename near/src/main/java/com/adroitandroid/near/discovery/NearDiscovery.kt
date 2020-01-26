@@ -6,7 +6,7 @@ import com.adroitandroid.near.discovery.server.UdpServerService
 import com.adroitandroid.near.model.Host
 
 interface NearDiscovery {
-    fun makeDiscoverable(hostName: String)
+    fun makeDiscoverable(hostName: String, mustMatch: String = "")
     fun makeNonDiscoverable()
     fun startDiscovery()
     fun stopDiscovery()
@@ -22,6 +22,7 @@ interface NearDiscovery {
         private lateinit var mLooper: Looper
         private lateinit var mContext: Context
         private var mPort: Int = UdpServerService.DISCOVERY_PORT
+        private var mRegex: Regex = Regex("^$")
 
         fun setDiscoverableTimeoutMillis(discoverableTimeout: Long): Builder {
             mDiscoverableTimeout = discoverableTimeout
@@ -54,9 +55,14 @@ interface NearDiscovery {
             return this
         }
 
+        fun setFilterRegex(regex: Regex): Builder {
+            mRegex = regex
+            return this
+        }
+
         fun build(): NearDiscovery {
             return NearDiscoveryImpl(mDiscoverableTimeout, mDiscoveryTimeout,
-                    mDiscoverablePingInterval, mListener, mLooper, mContext, mPort)
+                    mDiscoverablePingInterval, mListener, mLooper, mContext, mPort, mRegex)
         }
     }
 

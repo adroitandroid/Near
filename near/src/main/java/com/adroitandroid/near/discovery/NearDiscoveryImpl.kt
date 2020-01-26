@@ -23,7 +23,8 @@ internal class NearDiscoveryImpl(private val mDiscoverableTimeout: Long,
                                  private val mListener: NearDiscovery.Listener,
                                  private val mListenerLooper: Looper,
                                  private val mContext: Context,
-                                 private val mPort: Int) : NearDiscovery {
+                                 private val mPort: Int,
+                                 private val mRegex: Regex) : NearDiscovery {
     override var isDiscoverable: Boolean = false
         private set
     override var isDiscovering: Boolean = false
@@ -33,9 +34,9 @@ internal class NearDiscoveryImpl(private val mDiscoverableTimeout: Long,
     private lateinit var mDiscoveryDisposable: Disposable
     private val mCurrentPeers: MutableSet<Host> = mutableSetOf()
 
-    override fun makeDiscoverable(hostName: String) {
+    override fun makeDiscoverable(hostName: String, mustMatch: String) {
         if (!isDiscoverable) {
-            beDiscoverable(JSONObject(mapOf("name" to hostName, "filterText" to "")).toString())
+            beDiscoverable(JSONObject(mapOf("name" to hostName, "filterText" to mustMatch)).toString())
             mDiscoverableDisposable = Observable.timer(mDiscoverableTimeout, TimeUnit.MILLISECONDS, Schedulers.io())
                     .subscribe {
                         if (isDiscoverable) {
@@ -76,6 +77,7 @@ internal class NearDiscoveryImpl(private val mDiscoverableTimeout: Long,
             intent.putExtra(UdpServerService.BUNDLE_COMMAND, UdpServerService.COMMAND_START_SERVER)
             intent.putExtra(UdpServerService.BUNDLE_STALE_TIMEOUT, mPingInterval * 2)
             intent.putExtra(UdpServerService.BUNDLE_DISCOVERY_PORT, mPort)
+            intent.putExtra(UdpServerService.BUNDLE_REGEX, mRegex.toPattern().toString())
             mContext.startService(intent)
             isDiscovering = true
             mContext.bindService(intent, mServerConnection, Context.BIND_AUTO_CREATE)

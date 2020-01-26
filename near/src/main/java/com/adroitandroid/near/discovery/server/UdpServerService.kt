@@ -26,7 +26,8 @@ class UdpServerService : Service() {
         if (COMMAND_START_SERVER == intent.getStringExtra(BUNDLE_COMMAND)) {
             mStaleTimeout = intent.getLongExtra(BUNDLE_STALE_TIMEOUT, 10000)
             startBroadcastListening(intent.getBooleanExtra(BUNDLE_IS_HOST_CLIENT, false),
-                    intent.getIntExtra(BUNDLE_DISCOVERY_PORT, DISCOVERY_PORT))
+                    intent.getIntExtra(BUNDLE_DISCOVERY_PORT, DISCOVERY_PORT),
+                    intent.getStringExtra(BUNDLE_REGEX) ?: "^$")
         } else if (COMMAND_STOP_SERVER == intent.getStringExtra(BUNDLE_COMMAND)) {
             UdpBroadcastListeningHandler.stopListeningForBroadcasts()
             stopSelf()
@@ -77,9 +78,9 @@ class UdpServerService : Service() {
         return mBinder
     }
 
-    private fun startBroadcastListening(isHostClientToo: Boolean, port: Int) {
+    private fun startBroadcastListening(isHostClientToo: Boolean, port: Int, regex: String) {
         UdpBroadcastListeningHandler.startBroadcastListening(mHostHandlerMap, mCurrentHostIps,
-                isHostClientToo, mStaleTimeout, port)
+                isHostClientToo, mStaleTimeout, port, Regex(regex))
     }
 
     inner class UdpServerBinder : Binder() {
@@ -102,6 +103,7 @@ class UdpServerService : Service() {
         const val BUNDLE_COMMAND = "bundle_command"
         const val BUNDLE_STALE_TIMEOUT = "bundle_stale_timeout"
         const val BUNDLE_DISCOVERY_PORT = "bundle_discovery_port"
+        const val BUNDLE_REGEX = "bundle_regex"
         private const val BUNDLE_IS_HOST_CLIENT = "bundle_host_is_client_too"
         const val COMMAND_START_SERVER = "start_server"
         const val COMMAND_STOP_SERVER = "stop_server"
