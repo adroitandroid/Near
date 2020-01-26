@@ -7,6 +7,10 @@ import android.content.ServiceConnection
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import com.adroitandroid.near.connect.client.TcpClientListener
+import com.adroitandroid.near.connect.client.TcpClientService
+import com.adroitandroid.near.connect.server.TcpServerListener
+import com.adroitandroid.near.connect.server.TcpServerService
 import com.adroitandroid.near.model.Host
 import java.net.InetAddress
 
@@ -19,8 +23,8 @@ class NearConnectImpl(private val mContext: Context,
     private var sendDataQueue: MutableList<ByteArray> = mutableListOf()
     private var sendDestQueue: MutableList<Host> = mutableListOf()
     private var sendJobQueue: MutableList<Long> = mutableListOf()
-    private var clientServiceListener: TcpClientService.Listener? = null
-    private var serverServiceListener: TcpServerService.TcpServerListener? = null
+    private var clientServiceListener: TcpClientListener? = null
+    private var serverServiceListener: TcpServerListener? = null
 
     private val clientConnection: ServiceConnection = object: ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
@@ -46,9 +50,9 @@ class NearConnectImpl(private val mContext: Context,
         override fun onServiceDisconnected(name: ComponentName?) { }
     }
 
-    private fun getClientServiceListener(): TcpClientService.Listener {
+    private fun getClientServiceListener(): TcpClientListener {
         if(clientServiceListener == null) {
-            clientServiceListener = object: TcpClientService.Listener {
+            clientServiceListener = object: TcpClientListener {
                 override fun onSendSuccess(jobId: Long) {
                     Handler(mLooper).post { mListener.onSendComplete(jobId) }
                 }
@@ -86,9 +90,9 @@ class NearConnectImpl(private val mContext: Context,
         override fun onServiceDisconnected(name: ComponentName?) { }
     }
 
-    private fun getServerServiceListener(): TcpServerService.TcpServerListener {
+    private fun getServerServiceListener(): TcpServerListener {
         if(serverServiceListener == null) {
-            serverServiceListener = object: TcpServerService.TcpServerListener() {
+            serverServiceListener = object: TcpServerListener() {
                 override fun onServerStartFailed(e: Throwable?) {
                     Handler(mLooper).post { mListener.onStartListenFailure(e) }
                 }

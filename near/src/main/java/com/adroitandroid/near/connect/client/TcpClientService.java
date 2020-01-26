@@ -1,4 +1,4 @@
-package com.adroitandroid.near.connect;
+package com.adroitandroid.near.connect.client;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
@@ -11,9 +11,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
+import com.adroitandroid.near.connect.server.TcpServerService;
 import com.adroitandroid.near.model.Host;
 
 import java.io.DataOutputStream;
@@ -21,15 +19,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
 
-/**
- * Created by pv on 21/06/17.
- */
-
 public class TcpClientService extends Service {
 
     private PowerManager.WakeLock mWakeLock;
 
-    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
         return new TcpClientBinder();
@@ -43,22 +36,22 @@ public class TcpClientService extends Service {
         mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TcpClientService");
     }
 
-    private void send(@NonNull final byte[] data,
-                      @NonNull final Host destination,
-                      final Listener listener,
+    private void send(final byte[] data,
+                      final Host destination,
+                      final TcpClientListener listener,
                       final Looper listenerLooper,
                       final long jobId) {
         InetAddress destAddress;
         Socket socket = null;
-        mWakeLock.acquire();
+        mWakeLock.acquire(30*60*1000L);
 
         try {
             destAddress = InetAddress.getByName(destination.getHostAddress());
             socket = new Socket(destAddress, TcpServerService.SERVER_PORT);
             DataOutputStream dOut = new DataOutputStream(socket.getOutputStream());
 
-            dOut.writeInt(data.length); // write length of the message
-            dOut.write(data);           // write the message
+            dOut.writeInt(data.length);
+            dOut.write(data);
 
             new Handler(listenerLooper).post(new Runnable() {
                 @Override
@@ -87,11 +80,11 @@ public class TcpClientService extends Service {
         }
     }
 
-    class TcpClientBinder extends Binder {
-        private Listener mListener;
+    public class TcpClientBinder extends Binder {
+        private TcpClientListener mListener;
         private Looper mListenerLooper;
 
-        void send(final byte[] data, final Host destination, final long jobId) {
+        public void send(final byte[] data, final Host destination, final long jobId) {
             new HandlerThread("TcpClientThread") {
                 @Override
                 protected void onLooperPrepared() {
@@ -106,15 +99,9 @@ public class TcpClientService extends Service {
             }.start();
         }
 
-        void setListener(Listener listener, Looper looper) {
+        public void setListener(TcpClientListener listener, Looper looper) {
             mListener = listener;
             mListenerLooper = looper;
         }
-    }
-
-    interface Listener {
-        void onSendSuccess(long jobId);
-
-        void onSendFailure(long jobId, Throwable e);
     }
 }

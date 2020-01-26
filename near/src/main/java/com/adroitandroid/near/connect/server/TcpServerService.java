@@ -1,4 +1,4 @@
-package com.adroitandroid.near.connect;
+package com.adroitandroid.near.connect.server;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
@@ -11,8 +11,6 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
 
-import androidx.annotation.Nullable;
-
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -20,17 +18,13 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-/**
- * Created by pv on 21/06/17.
- */
-
 public class TcpServerService extends Service {
-    static final int SERVER_PORT = 6789;
+    public static final int SERVER_PORT = 6789;
     private boolean mStarted;
     private PowerManager.WakeLock mWakeLock;
     private ServerSocket mServerSocket;
 
-    @Nullable
+
     @Override
     public IBinder onBind(Intent intent) {
         return new TcpServerBinder();
@@ -46,13 +40,12 @@ public class TcpServerService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-//        Dummy, main implementation is in the binder
         return START_STICKY;
     }
 
     private void startServer(final TcpServerListener listener) {
         mStarted = true;
-        mWakeLock.acquire();
+        mWakeLock.acquire(30*60*1000L);
         final Looper myLooper = Looper.myLooper();
 
         new HandlerThread("TcpServerThread") {
@@ -108,10 +101,10 @@ public class TcpServerService extends Service {
                         try {
                             DataInputStream dataInputStream = new DataInputStream(connectionSocket.getInputStream());
 
-                            int length = dataInputStream.readInt(); // read length of incoming message
+                            int length = dataInputStream.readInt();
                             if (length > 0) {
                                 bytes = new byte[length];
-                                dataInputStream.readFully(bytes, 0, bytes.length); // read the message
+                                dataInputStream.readFully(bytes, 0, bytes.length);
                             }
                             onReceive(myLooper, listener, bytes, connectionSocket.getInetAddress());
                         } catch (IOException e) {
@@ -156,29 +149,18 @@ public class TcpServerService extends Service {
         }.start();
     }
 
-    static abstract class TcpServerListener {
-
-        void onStartFailure(Throwable e) {
-            onServerStartFailed(e);
-        }
-
-        abstract void onServerStartFailed(Throwable e);
-
-        abstract void onReceive(byte[] bytes, InetAddress inetAddress);
-    }
-
-    class TcpServerBinder extends Binder {
+    public class TcpServerBinder extends Binder {
         private TcpServerListener mListener;
 
-        void setListener(TcpServerListener listener) {
+        public void setListener(TcpServerListener listener) {
             mListener = listener;
         }
 
-        void startServer() {
+        public void startServer() {
             TcpServerService.this.startServer(mListener);
         }
 
-        void stopServer() {
+        public void stopServer() {
             TcpServerService.this.stopServer();
         }
     }

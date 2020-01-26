@@ -14,9 +14,9 @@
 
         <service android:name="com.adroitandroid.near.discovery.server.UdpServerService" />
 
-        <service android:name="com.adroitandroid.near.connect.TcpServerService" />
+        <service android:name="com.adroitandroid.near.connect.server.TcpServerService" />
 
-        <service android:name="com.adroitandroid.near.connect.TcpClientService" />
+        <service android:name="com.adroitandroid.near.connect.client.TcpClientService" />
 
     </application>
 
