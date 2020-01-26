@@ -41,7 +41,7 @@ class NearConnectImpl(private val mContext: Context,
                             jobId = sendJobQueue.removeAt(0)
                         }
                     }
-                    service.send(candidateData, candidateHost, jobId)
+                    service.send(candidateData!!, candidateHost!!, jobId)
                 }
                 mContext.unbindService(this)
             }
