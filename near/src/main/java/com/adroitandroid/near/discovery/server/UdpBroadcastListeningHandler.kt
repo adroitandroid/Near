@@ -4,8 +4,10 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.os.Message
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.collection.ArrayMap
 import com.adroitandroid.near.model.Host
+import org.json.JSONObject
 import java.io.IOException
 import java.net.*
 
@@ -44,9 +46,11 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
                 val packet = DatagramPacket(recvBuf, recvBuf.size)
                 val socket = mSocket!!
                 socket.receive(packet)
-                val host = Host(packet.address, String(packet.data).trim { it <= ' ' })
 
-                if (isHostClientToo || !mCurrentIps.contains(host.hostAddress)) {
+                val jsonObject = JSONObject(String(packet.data).trim { it <= ' ' })
+                val host = Host(packet.address, jsonObject.getString("name"), jsonObject.getString("filterText"))
+
+                if ((isHostClientToo || !mCurrentIps.contains(host.hostAddress)) && hostMatchesFilter(host.filterText.trim { it <= ' ' })) {
                     var handler = mHostHandlerMap[host]
                     if (handler == null) {
                         handler = StaleHostHandler(host, mHostHandlerMap, mListener)
@@ -90,6 +94,11 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
             }
         }
         return false
+    }
+
+    private fun hostMatchesFilter(filterText: String): Boolean {
+        val regex = Regex("^$")
+        return filterText.matches(regex)
     }
 
     private fun stop() {

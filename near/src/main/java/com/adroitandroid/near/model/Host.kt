@@ -2,26 +2,31 @@ package com.adroitandroid.near.model
 
 import android.os.Parcel
 import android.os.Parcelable
+import org.json.JSONObject
 import java.net.InetAddress
 import java.net.UnknownHostException
 
 open class Host : Parcelable {
     private val inetAddress: InetAddress
     val name: String
+    val filterText: String
 
     private constructor() {
         inetAddress = LOOPBACK_ADDRESS
         name = DUMMY
+        filterText = FILTER_TEXT
     }
 
-    constructor(address: InetAddress, name: String) {
+    constructor(address: InetAddress, name: String, filterText: String) {
         inetAddress = address
         this.name = name
+        this.filterText = filterText
     }
 
     protected constructor(parcel: Parcel) {
         name = parcel.readString() ?: DUMMY
         inetAddress = getInetAddressFrom(parcel) ?: LOOPBACK_ADDRESS
+        filterText = parcel.readString() ?: FILTER_TEXT
     }
 
     override fun describeContents(): Int {
@@ -32,6 +37,7 @@ open class Host : Parcelable {
         dest.writeString(name)
         dest.writeInt(inetAddress.address.size)
         dest.writeByteArray(inetAddress.address)
+        dest.writeString(filterText)
     }
 
     private fun getInetAddressFrom(parcel: Parcel): InetAddress? {
@@ -59,15 +65,16 @@ open class Host : Parcelable {
     }
 
     override fun toString(): String {
-        return "Host{" +
-                "address=" + inetAddress.hostAddress +
-                ", name='" + name + '\'' +
-                '}'
+        val hostMap: Map<String, Any> = mapOf("address" to inetAddress.hostAddress,
+                "name" to name,
+                "filterText" to filterText)
+        return JSONObject(hostMap).toString()
     }
 
     companion object CREATOR : Parcelable.Creator<Host> {
         const val DUMMY = "dummy"
         val LOOPBACK_ADDRESS: InetAddress = InetAddress.getLoopbackAddress()
+        const val FILTER_TEXT = ""
 
         override fun createFromParcel(parcel: Parcel): Host {
             return Host(parcel)
