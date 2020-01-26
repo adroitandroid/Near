@@ -14,6 +14,7 @@ import com.adroitandroid.near.model.Host
 import io.reactivex.Observable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import org.json.JSONObject
 import java.util.concurrent.TimeUnit
 
 internal class NearDiscoveryImpl(private val mDiscoverableTimeout: Long,
@@ -34,7 +35,7 @@ internal class NearDiscoveryImpl(private val mDiscoverableTimeout: Long,
 
     override fun makeDiscoverable(hostName: String) {
         if (!isDiscoverable) {
-            beDiscoverable(hostName)
+            beDiscoverable(JSONObject(mapOf("name" to hostName, "filterText" to "")).toString())
             mDiscoverableDisposable = Observable.timer(mDiscoverableTimeout, TimeUnit.MILLISECONDS, Schedulers.io())
                     .subscribe {
                         if (isDiscoverable) {
