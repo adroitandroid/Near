@@ -66,8 +66,8 @@ open class Host : Parcelable {
 
     override fun toString(): String {
         val hostMap: Map<String, Any> = mapOf("address" to inetAddress.hostAddress,
-                "name" to name,
-                "filterText" to filterText)
+                JSON_NAME to name,
+                JSON_FILTER_TEXT to filterText)
         return JSONObject(hostMap).toString()
     }
 
@@ -75,6 +75,8 @@ open class Host : Parcelable {
         const val DUMMY = "dummy"
         val LOOPBACK_ADDRESS: InetAddress = InetAddress.getLoopbackAddress()
         const val FILTER_TEXT = ""
+        const val JSON_NAME = "name"
+        const val JSON_FILTER_TEXT = "filterText"
 
         override fun createFromParcel(parcel: Parcel): Host {
             return Host(parcel)

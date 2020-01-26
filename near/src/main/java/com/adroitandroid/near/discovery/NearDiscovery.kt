@@ -55,7 +55,7 @@ interface NearDiscovery {
             return this
         }
 
-        fun setFilterRegex(regex: Regex): Builder {
+        fun setFilter(regex: Regex): Builder {
             mRegex = regex
             return this
         }

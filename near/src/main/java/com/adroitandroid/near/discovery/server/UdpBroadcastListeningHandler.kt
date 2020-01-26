@@ -49,7 +49,7 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
                 socket.receive(packet)
 
                 val jsonObject = JSONObject(String(packet.data).trim { it <= ' ' })
-                val host = Host(packet.address, jsonObject.getString("name"), jsonObject.getString("filterText"))
+                val host = Host(packet.address, jsonObject.getString(Host.JSON_NAME), jsonObject.getString(Host.JSON_FILTER_TEXT))
 
                 if ((isHostClientToo || !mCurrentIps.contains(host.hostAddress)) && hostMatchesFilter(host.filterText.trim { it <= ' ' })) {
                     var handler = mHostHandlerMap[host]

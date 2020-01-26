@@ -36,7 +36,8 @@ internal class NearDiscoveryImpl(private val mDiscoverableTimeout: Long,
 
     override fun makeDiscoverable(hostName: String, mustMatch: String) {
         if (!isDiscoverable) {
-            beDiscoverable(JSONObject(mapOf("name" to hostName, "filterText" to mustMatch)).toString())
+            val hostJson = JSONObject(mapOf(Host.JSON_NAME to hostName, Host.JSON_FILTER_TEXT to mustMatch))
+            beDiscoverable(hostJson)
             mDiscoverableDisposable = Observable.timer(mDiscoverableTimeout, TimeUnit.MILLISECONDS, Schedulers.io())
                     .subscribe {
                         if (isDiscoverable) {
@@ -54,9 +55,9 @@ internal class NearDiscoveryImpl(private val mDiscoverableTimeout: Long,
         }
     }
 
-    private fun beDiscoverable(hostName: String) {
+    private fun beDiscoverable(hostJson: JSONObject) {
         val intent = Intent(mContext.applicationContext, UdpBroadcastService::class.java)
-        intent.putExtra(UdpBroadcastService.BUNDLE_NAME, hostName)
+        intent.putExtra(UdpBroadcastService.BUNDLE_HOST_JSON, hostJson.toString())
         intent.putExtra(UdpBroadcastService.BUNDLE_ACTION, UdpBroadcastService.ACTION_START_BROADCAST)
         intent.putExtra(UdpBroadcastService.BUNDLE_INTERVAL, mPingInterval)
         intent.putExtra(UdpBroadcastService.BUNDLE_DISCOVERY_PORT, mPort)

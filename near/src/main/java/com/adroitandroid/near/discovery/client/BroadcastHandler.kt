@@ -3,11 +3,12 @@ package com.adroitandroid.near.discovery.client
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import org.json.JSONObject
 import java.io.IOException
 import java.net.*
 
 class BroadcastHandler internal constructor(looper: Looper,
-                                            private val mHostName: String,
+                                            private val mHostJson: JSONObject,
                                             private val mBroadcastInterval: Long,
                                             private val port: Int): Handler(looper) {
     private var mSocket: DatagramSocket? = null
@@ -24,7 +25,7 @@ class BroadcastHandler internal constructor(looper: Looper,
     fun broadcast() {
         if (mSocket != null) {
             try {
-                val sendData = mHostName.toByteArray()
+                val sendData = mHostJson.toString().toByteArray()
                 try {
                     val sendPacket = DatagramPacket(sendData, sendData.size,
                             InetAddress.getByName("255.255.255.255"), port)
