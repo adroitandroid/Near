@@ -97,14 +97,12 @@ class NearConnectImpl(private val mContext: Context,
                     Handler(mLooper).post { mListener.onStartListenFailure(e) }
                 }
 
-                override fun onReceive(bytes: ByteArray?, inetAddress: InetAddress?) {
-                    if(bytes != null && inetAddress != null) {
-                        Handler(mLooper).post {
-                            mPeers.forEach peerLoop@{
-                                if (it.hostAddress == inetAddress.hostAddress) {
-                                    mListener.onReceive(bytes, it)
-                                    return@peerLoop
-                                }
+                override fun onReceive(bytes: ByteArray, inetAddress: InetAddress) {
+                    Handler(mLooper).post {
+                        mPeers.forEach peerLoop@{
+                            if (it.hostAddress == inetAddress.hostAddress) {
+                                mListener.onReceive(bytes, it)
+                                return@peerLoop
                             }
                         }
                     }
