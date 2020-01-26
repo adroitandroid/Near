@@ -19,7 +19,7 @@ class UdpServerService : Service() {
     private var mBinder: UdpServerBinder? = null
     private val mHostHandlerMap = ArrayMap<Host, StaleHostHandler>()
     private val mCurrentHostIps = Collections.synchronizedSet(ArraySet<String>())
-    private lateinit var mConnectivityChangeReceiver: ConnectivityChangeReceiver
+    private lateinit var mConnectivityChangeReceiver: ConnectivityObserver
     private var mStaleTimeout: Long = 0
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -38,10 +38,8 @@ class UdpServerService : Service() {
     override fun onCreate() {
         super.onCreate()
         initCurrentDeviceIps()
-        val connectivityChangeFilter = IntentFilter()
-        connectivityChangeFilter.addAction(ConnectivityManager.CONNECTIVITY_ACTION)
-        mConnectivityChangeReceiver = ConnectivityChangeReceiver()
-        registerReceiver(mConnectivityChangeReceiver, connectivityChangeFilter)
+        mConnectivityChangeReceiver = ConnectivityObserver(this, { initCurrentDeviceIps() })
+        mConnectivityChangeReceiver.start()
     }
 
     private fun initCurrentDeviceIps() {
@@ -70,7 +68,7 @@ class UdpServerService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        unregisterReceiver(mConnectivityChangeReceiver)
+        mConnectivityChangeReceiver.stop()
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -90,12 +88,6 @@ class UdpServerService : Service() {
 
         fun stopBroadcastListening() {
             UdpBroadcastListeningHandler.stopListeningForBroadcasts()
-        }
-    }
-
-    private inner class ConnectivityChangeReceiver : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            initCurrentDeviceIps()
         }
     }
 
