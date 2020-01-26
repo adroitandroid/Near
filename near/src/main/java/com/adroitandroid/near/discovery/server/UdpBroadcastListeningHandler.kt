@@ -44,7 +44,7 @@ class UdpBroadcastListeningHandler internal constructor(looper: Looper) : Handle
                 val packet = DatagramPacket(recvBuf, recvBuf.size)
                 val socket = mSocket!!
                 socket.receive(packet)
-                val host = Host(packet.address, String(packet.data).trim { it <= ' ' })
+                val host = Host(packet.address, String(packet.data).trim())
 
                 if (isHostClientToo || !mCurrentIps.contains(host.hostAddress)) {
                     var handler = mHostHandlerMap[host]
