@@ -10,7 +10,7 @@ Sample app, with the source code [here](app/) is [available on PlayStore](https:
 
 ## NearDiscovery
 NearDiscovery takes hostname and a bunch of settings in a builder pattern for the discovery mechanism. A NearDiscovery object allows the following discovery related self-explanatory APIs:
-* ```void makeDiscoverable(String hostName);```
+* ```void makeDiscoverable(String hostName, String mustMatch /* optional */);```
 * ```void makeNonDiscoverable();```
 * ```void startDiscovery();```
 * ```void stopDiscovery();```
@@ -26,6 +26,8 @@ private NearDiscovery mNearDiscovery = new NearDiscovery.Builder()
                 .setDiscoveryTimeoutMillis(DISCOVERY_TIMEOUT_MILLIS)
                 .setDiscoverablePingIntervalMillis(DISCOVERABLE_PING_INTERVAL_MILLIS)
                 .setDiscoveryListener(getNearDiscoveryListener(), Looper.getMainLooper())
+                .setPort(8989) // optional
+                .setFilter(Regex("filter")) // optional, use with makeDiscoverable("hostName", "filter")
                 .build();
 ```
 The Looper passed as the 2nd param of NearDiscovery.Builder.setDiscoveryListener() is for the thread on which the listener, the 1st param, should be called.
@@ -74,6 +76,7 @@ Here's how the NearConnect object is created:
                 .fromDiscovery(mNearDiscovery)
                 .setContext(this)
                 .setListener(getNearConnectListener(), Looper.getMainLooper())
+                .setPort(8990) // optional
                 .build();
 ```
 The NearDiscovery object passed in NearConnect.Builder.fromDiscovery() is only to get the list of peers from. Peers can be explicitly provided as well:
@@ -81,7 +84,9 @@ The NearDiscovery object passed in NearConnect.Builder.fromDiscovery() is only t
         private NearConnect mNearConnect = new NearConnect.Builder()
                 .forPeers(peers) // Set<Host> peers
                 .setContext(this)
-                .setListener(getNearConnectListener(), Looper.getMainLooper()).build();
+                .setListener(getNearConnectListener(), Looper.getMainLooper())
+                .setPort(8990) // optional
+                .build();
 ```
 Again, the NearConnect.Builder.setListener() takes the Listener as the 1st argument and the Looper on which to call the Listener as the 2nd argument. Here's what the Listener looks like:
 ```java
@@ -132,7 +137,7 @@ Then add the dependency in your project build.gradle
 ```gradle
 dependencies {
     ...
-    implementation 'com.github.adroitandroid:Near:v1.2'
+    implementation 'com.github.adroitandroid:Near:v2.0'
     ...
 }
 ```
