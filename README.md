@@ -137,7 +137,7 @@ Then add the dependency in your project build.gradle
 ```gradle
 dependencies {
     ...
-    implementation 'com.github.adroitandroid:Near:v2.0'
+    implementation 'com.github.adroitandroid:Near:v1.2'
     ...
 }
 ```
