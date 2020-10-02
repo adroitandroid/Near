@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.*
 import android.os.PowerManager.WakeLock
-import com.adroitandroid.near.connect.server.TcpServerService
 import java.io.DataInputStream
 import java.io.IOException
 import java.net.InetAddress
