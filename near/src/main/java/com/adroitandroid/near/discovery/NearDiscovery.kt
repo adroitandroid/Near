@@ -6,7 +6,8 @@ import com.adroitandroid.near.discovery.server.UdpServerService
 import com.adroitandroid.near.model.Host
 
 interface NearDiscovery {
-    fun makeDiscoverable(hostName: String, mustMatch: String = "")
+    fun makeDiscoverable(hostName: String, mustMatch: String)
+    fun makeDiscoverable(hostName: String) = makeDiscoverable(hostName, String())
     fun makeNonDiscoverable()
     fun startDiscovery()
     fun stopDiscovery()

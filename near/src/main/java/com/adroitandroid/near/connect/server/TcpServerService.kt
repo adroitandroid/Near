@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.*
 import android.os.PowerManager.WakeLock
-import com.adroitandroid.near.connect.server.TcpServerService
 import java.io.DataInputStream
 import java.io.IOException
 import java.net.InetAddress
@@ -30,7 +29,7 @@ class TcpServerService : Service() {
         mWakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "TcpServerService")
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         return START_STICKY
     }
 

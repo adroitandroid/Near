@@ -4,7 +4,6 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.os.Looper
 import android.os.Message
-import androidx.appcompat.widget.AppCompatTextView
 import androidx.collection.ArrayMap
 import com.adroitandroid.near.model.Host
 import org.json.JSONException

@@ -1,11 +1,7 @@
 package com.adroitandroid.near.discovery.server
 
 import android.app.Service
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
-import android.net.ConnectivityManager
 import android.os.Binder
 import android.os.IBinder
 import androidx.collection.ArrayMap
